@@ -70,3 +70,37 @@ func Index[T comparable](arr []T, target T) int {
 	}
 	return -1
 }
+
+func Split[T any](s []T, chunk int) [][]T {
+	length := len(s)
+	if length == 0 || length <= chunk {
+		return [][]T{s[:]}
+	}
+
+	var data [][]T
+	for i := 0; i < length; i += chunk {
+		next := i + chunk
+		if next > length {
+			data = append(data, s[i:])
+			break
+		}
+		data = append(data, s[i:i+chunk])
+	}
+
+	return data
+}
+
+func Reverse[T any](arr []T) {
+	for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
+		arr[i], arr[j] = arr[j], arr[i]
+	}
+}
+
+func GroupBy[T any, K comparable](arr []T, fn func(T) K) map[K][]T {
+	result := make(map[K][]T)
+	for _, v := range arr {
+		key := fn(v)
+		result[key] = append(result[key], v)
+	}
+	return result
+}

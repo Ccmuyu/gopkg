@@ -15,5 +15,16 @@ func Sort[T Comparable](arr []T, asc bool) {
 		}
 		return arr[i] > arr[j]
 	})
+}
 
+func SortFunc[T any](arr []T, cmp func(a, b T) int) {
+	sort.Slice(arr, func(i, j int) bool {
+		return cmp(arr[i], arr[j]) < 0
+	})
+}
+
+func SortFuncStable[T any](arr []T, cmp func(a, b T) int) {
+	sort.SliceStable(arr, func(i, j int) bool {
+		return cmp(arr[i], arr[j]) < 0
+	})
 }

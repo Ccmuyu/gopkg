@@ -24,7 +24,7 @@ func TestBuild(t *testing.T) {
 	s := Build("https://example.com", map[string]string{
 		"name": "john",
 	})
-	AssertTrue(t, Contains(s, "name=john"))
+	AssertTrue(t, strings.Contains(s, "name=john"))
 }
 
 func TestHasScheme(t *testing.T) {
@@ -50,8 +50,4 @@ func TestDecode(t *testing.T) {
 
 func TestJoinPath(t *testing.T) {
 	AssertEqual(t, JoinPath("https://example.com", "api", "v1", "users"), "https://example.com/api/v1/users")
-}
-
-func Contains(s, substr string) bool {
-	return strings.Contains(s, substr)
 }

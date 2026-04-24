@@ -5,18 +5,6 @@ import (
 	"testing"
 )
 
-func AssertSliceEqual[T any](t *testing.T, actual, expected []T) {
-	if len(actual) != len(expected) {
-		t.Errorf("len mismatch: %d vs %d", len(actual), len(expected))
-		return
-	}
-	for i := range actual {
-		if any(actual[i]) != any(expected[i]) {
-			t.Errorf("index %d: %v vs %v", i, actual[i], expected[i])
-		}
-	}
-}
-
 func BenchmarkUpper(b *testing.B) {
 	s := "hello world example string for benchmarking"
 	b.ResetTimer()
