@@ -97,7 +97,14 @@ func Reverse[T any](arr []T) {
 }
 
 func GroupBy[T any, K comparable](arr []T, fn func(T) K) map[K][]T {
-	result := make(map[K][]T)
+	countMap := make(map[K]int)
+	for _, v := range arr {
+		countMap[fn(v)]++
+	}
+	result := make(map[K][]T, len(countMap))
+	for k, count := range countMap {
+		result[k] = make([]T, 0, count)
+	}
 	for _, v := range arr {
 		key := fn(v)
 		result[key] = append(result[key], v)
