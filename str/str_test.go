@@ -1,0 +1,79 @@
+package str
+
+import (
+	"testing"
+
+	. "github.com/Ccmuyu/gopkg/test"
+)
+
+func TestTrim(t *testing.T) {
+	AssertEqual(t, Trim("  hello  "), "hello")
+}
+
+func TestUpper(t *testing.T) {
+	AssertEqual(t, Upper("hello"), "HELLO")
+}
+
+func TestLower(t *testing.T) {
+	AssertEqual(t, Lower("HELLO"), "hello")
+}
+
+func TestSplit(t *testing.T) {
+	AssertSliceEqual(t, Split("a,b,c", ","), []string{"a", "b", "c"})
+	AssertSliceEqual(t, Split("", ","), []string{})
+}
+
+func TestSplitN(t *testing.T) {
+	AssertSliceEqual(t, SplitN("a,b,c", ",", 2), []string{"a", "b,c"})
+}
+
+func TestJoin(t *testing.T) {
+	AssertEqual(t, Join([]string{"a", "b", "c"}, ","), "a,b,c")
+}
+
+func TestContains(t *testing.T) {
+	AssertTrue(t, Contains("hello", "ell"))
+	AssertTrue(t, !Contains("hello", "xxx"))
+}
+
+func TestHasPrefix(t *testing.T) {
+	AssertTrue(t, HasPrefix("hello", "hel"))
+	AssertTrue(t, !HasPrefix("hello", "xxx"))
+}
+
+func TestHasSuffix(t *testing.T) {
+	AssertTrue(t, HasSuffix("hello", "llo"))
+	AssertTrue(t, !HasSuffix("hello", "xxx"))
+}
+
+func TestReplace(t *testing.T) {
+	AssertEqual(t, Replace("hello", "l", "L"), "heLLo")
+}
+
+func TestEllipsis(t *testing.T) {
+	AssertEqual(t, Ellipsis("hello world", 5), "hello...")
+	AssertEqual(t, Ellipsis("hi", 5), "hi")
+}
+
+func TestIsEmpty(t *testing.T) {
+	AssertTrue(t, IsEmpty(""))
+	AssertTrue(t, !IsEmpty("a"))
+}
+
+func TestDefaultIfEmpty(t *testing.T) {
+	AssertEqual(t, DefaultIfEmpty("", "default"), "default")
+	AssertEqual(t, DefaultIfEmpty("value", "default"), "value")
+}
+
+func TestRepeat(t *testing.T) {
+	AssertEqual(t, Repeat("ab", 3), "ababab")
+}
+
+func TestContainsAny(t *testing.T) {
+	AssertTrue(t, ContainsAny("hello", "aeiou"))
+	AssertTrue(t, !ContainsAny("hll", "aeiou"))
+}
+
+func TestCount(t *testing.T) {
+	AssertEqual(t, Count("hello", "l"), 2)
+}
