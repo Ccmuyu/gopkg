@@ -30,6 +30,8 @@ func BenchmarkLogWithCtx(b *testing.B) {
 }
 
 func BenchmarkDefaultLogger(b *testing.B) {
+	buf := &bytes.Buffer{}
+	SetDefault(New(WithOutput(buf), WithLevel(DEBUG)))
 	ctx := context.WithValue(context.Background(), "trace_id", "test-trace")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
