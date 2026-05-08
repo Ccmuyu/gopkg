@@ -20,10 +20,11 @@ go get github.com/Ccmuyu/gopkg
 | `validation` | 校验工具：IsEmail、IsPhone、IsURL、IsIP 等 |
 | `net/ip` | IP 处理：IsValid、IsPrivate、ToInt |
 | `net/url` | URL 处理：Parse、ParseQuery、Build |
-| `bytes` | 字节操作：Hex、Base64、HumanReadable |
+| `bytes` | 字节操作：Hex、Base64、HumanReadable，含 string 便捷变体 |
 | `crypto` | 加密哈希：MD5、SHA1、SHA256 |
 | `log` | 日志库：支持 context、多种级别、Formatter |
-| `sorts` | 排序：Sort、SortFunc 支持自定义比较器 |
+| `sorts` | 排序：Sort、SortFunc、SortFuncStable 支持自定义比较器 |
+| `times` | 时间工具：Format、FormatF、ParseUTCTime |
 | `test` | 测试工具：AssertEqual、AssertSliceEqual |
 
 ## 快速开始

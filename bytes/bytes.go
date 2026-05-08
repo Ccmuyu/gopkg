@@ -33,6 +33,30 @@ func Base64URLDecode(s string) ([]byte, error) {
 	return base64.URLEncoding.DecodeString(s)
 }
 
+func Base64EncodeString(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+func Base64DecodeString(s string) (string, error) {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func Base64URLEncodeString(s string) string {
+	return base64.URLEncoding.EncodeToString([]byte(s))
+}
+
+func Base64URLDecodeString(s string) (string, error) {
+	data, err := base64.URLEncoding.DecodeString(s)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 func HumanReadable(bytes int64) string {
 	const unit = 1024
 	if bytes < unit {

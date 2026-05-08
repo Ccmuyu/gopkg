@@ -73,18 +73,25 @@ func Index[T comparable](arr []T, target T) int {
 
 func Split[T any](s []T, chunk int) [][]T {
 	length := len(s)
-	if length == 0 || length <= chunk {
+	if chunk <= 0 {
+		return nil
+	}
+	if length == 0 {
+		return nil
+	}
+	if length <= chunk {
 		return [][]T{s[:]}
 	}
 
-	var data [][]T
+	n := (length + chunk - 1) / chunk
+	data := make([][]T, 0, n)
 	for i := 0; i < length; i += chunk {
 		next := i + chunk
 		if next > length {
 			data = append(data, s[i:])
 			break
 		}
-		data = append(data, s[i:i+chunk])
+		data = append(data, s[i:next])
 	}
 
 	return data

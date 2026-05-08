@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -76,9 +77,18 @@ func IsAlphanumeric(s string) bool {
 	return true
 }
 
+var regexCache sync.Map
+
 func IsMatch(s string, pattern string) bool {
-	matched, _ := regexp.MatchString(pattern, s)
-	return matched
+	if cached, ok := regexCache.Load(pattern); ok {
+		return cached.(*regexp.Regexp).MatchString(s)
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false
+	}
+	regexCache.Store(pattern, re)
+	return re.MatchString(s)
 }
 
 func IsEmailAddr(s string) bool {

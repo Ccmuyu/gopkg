@@ -38,6 +38,38 @@ func BenchmarkBase64Encode(b *testing.B) {
 	}
 }
 
+func BenchmarkBase64EncodeString(b *testing.B) {
+	s := "hello world example string for base64 encoding"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Base64EncodeString(s)
+	}
+}
+
+func BenchmarkBase64Decode(b *testing.B) {
+	s := Base64EncodeString("hello world example string for base64 encoding")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Base64Decode(s)
+	}
+}
+
+func BenchmarkBase64URLEncodeString(b *testing.B) {
+	s := "hello?world=foo&bar=baz"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Base64URLEncodeString(s)
+	}
+}
+
+func BenchmarkBase64URLDecode(b *testing.B) {
+	s := Base64URLEncodeString("hello?world=foo&bar=baz")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Base64URLDecode(s)
+	}
+}
+
 func BenchmarkHumanReadable(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
