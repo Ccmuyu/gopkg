@@ -14,7 +14,7 @@ go get github.com/Ccmuyu/gopkg
 |---|---|
 | `conv` | 类型转换：指针、字符串、JSON |
 | `slices` | 切片操作：过滤、映射、去重、分组等 |
-| `maps` | Map 操作：Keys、Values、Merge、Filter 等 |
+| `maps` | Map 操作：Keys、Values、Merge、MergeWith、Filter、Map、MapKey、Pick、Omit、Invert、ForEach、IsEqual 等 |
 | `str` | 字符串工具：Trim、Split、Contains、Ellipsis 等 |
 | `errors` | 错误处理：Wrap、Is、As、Join |
 | `validation` | 校验工具：IsEmail、IsPhone、IsURL、IsIP 等 |
