@@ -1,4 +1,4 @@
-package log
+package logs
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func TestLevel(t *testing.T) {
 
 func TestDefaultFormatter(t *testing.T) {
 	f := &DefaultFormatter{}
-	ctx := context.WithValue(context.Background(), "trace_id", "abc123")
+	ctx := WithTraceID(context.Background(), "abc123")
 	entry := &Entry{
 		Time:  time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		Level: INFO,
@@ -31,7 +31,7 @@ func TestDefaultFormatter(t *testing.T) {
 
 func TestJSONFormatter(t *testing.T) {
 	f := &JSONFormatter{}
-	ctx := context.WithValue(context.Background(), "trace_id", "abc123")
+	ctx := WithTraceID(context.Background(), "abc123")
 	entry := &Entry{
 		Time:  time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		Level: INFO,
@@ -50,6 +50,26 @@ func contains(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+func TestNewTraceID(t *testing.T) {
+	id1 := NewTraceID()
+	id2 := NewTraceID()
+	AssertTrue(t, len(id1) == 32)
+	AssertTrue(t, len(id2) == 32)
+	AssertTrue(t, id1 != id2)
+}
+
+func TestWithTraceID(t *testing.T) {
+	ctx := WithTraceID(context.Background(), "test-trace")
+	v := ctx.Value(TraceIDKey)
+	AssertEqual(t, v.(string), "test-trace")
+}
+
+func TestNewContext(t *testing.T) {
+	ctx := NewContext(context.Background())
+	v := ctx.Value(TraceIDKey)
+	AssertTrue(t, len(v.(string)) == 32)
 }
 
 func TestLoggerLevel(t *testing.T) {

@@ -16,7 +16,7 @@
 | `net/url` | Parse、ParseQuery、Build、GetHost、Encode等 | ✅ 已实现 |
 | `bytes` | Hex、Base64、HumanReadable | ✅ 已实现 |
 | `crypto` | MD5、SHA1、SHA256 | ✅ 已实现 |
-| `log` | ctx支持、多级别、Formatter | ✅ 已实现 |
+| `logs` | ctx支持、多级别、Formatter | ✅ 已实现 |
 | `sorts` | Sort、SortFunc、SortFuncStable | ✅ 已实现 |
 | `test` | AssertEqual、AssertTrue、AssertSliceEqual、ContainsStr | ✅ 已实现 |
 

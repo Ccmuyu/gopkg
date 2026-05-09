@@ -1,4 +1,4 @@
-package log
+package logs
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func (f *JSONFormatter) Format(entry *Entry) string {
 func formatEntry(entry *Entry) string {
 	traceID := ""
 	if entry.Ctx != nil {
-		if v := entry.Ctx.Value("trace_id"); v != nil {
+		if v := entry.Ctx.Value(TraceIDKey); v != nil {
 			traceID = v.(string)
 		}
 	}
@@ -46,7 +46,7 @@ func formatTime(t time.Time) string {
 func formatJSONEntry(entry *Entry) string {
 	traceID := ""
 	if entry.Ctx != nil {
-		if v := entry.Ctx.Value("trace_id"); v != nil {
+		if v := entry.Ctx.Value(TraceIDKey); v != nil {
 			traceID = v.(string)
 		}
 	}

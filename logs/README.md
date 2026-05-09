@@ -1,25 +1,25 @@
-# log
+# logs
 
 轻量级日志库，支持 context 链路追踪、多种日志级别、格式化输出。
 
 ## 安装
 
 ```go
-import "github.com/Ccmuyu/gopkg/log"
+import "github.com/Ccmuyu/gopkg/logs"
 ```
 
 ## 快速开始
 
 ```go
 import "context"
-"github.com/Ccmuyu/gopkg/log"
+"github.com/Ccmuyu/gopkg/logs"
 
 func main() {
-    ctx := context.Background()
+    ctx := logs.NewContext(context.Background())
     
-    log.Info(ctx, "server started")
-    log.Warn(ctx, "memory usage high: %d%%", 85)
-    log.Error(ctx, "connection failed: %s", "timeout")
+    logs.Info(ctx, "server started")
+    logs.Warn(ctx, "memory usage high: %d%%", 85)
+    logs.Error(ctx, "connection failed: %s", "timeout")
 }
 ```
 
@@ -33,11 +33,16 @@ func main() {
 
 ## Context 链路追踪
 
-在 context 中存入 `trace_id`，日志会自动提取并输出：
+使用 `logs.NewContext` 自动生成 trace_id，或 `logs.WithTraceID` 设置指定值：
 
 ```go
-ctx := context.WithValue(context.Background(), "trace_id", "abc123-456")
-log.Info(ctx, "request processed")
+// 自动生成 trace_id
+ctx := logs.NewContext(context.Background())
+logs.Info(ctx, "request processed")
+
+// 或指定 trace_id
+ctx = logs.WithTraceID(context.Background(), "abc123-456")
+logs.Info(ctx, "request processed")
 
 // 输出: 2026-04-24 15:30:00.123 [INFO] [abc123-456] request processed
 ```
@@ -47,18 +52,18 @@ log.Info(ctx, "request processed")
 ```go
 import (
     "bytes"
-    "github.com/Ccmuyu/gopkg/log"
+    "github.com/Ccmuyu/gopkg/logs"
 )
 
 func main() {
     buf := &bytes.Buffer{}
-    l := log.New(
-        log.WithLevel(log.DEBUG),
-        log.WithOutput(buf),
-        log.WithFormatter(&log.JSONFormatter{}),
+    l := logs.New(
+        logs.WithLevel(logs.DEBUG),
+        logs.WithOutput(buf),
+        logs.WithFormatter(&logs.JSONFormatter{}),
     )
     
-    ctx := context.WithValue(context.Background(), "trace_id", "trace-001")
+    ctx := logs.WithTraceID(context.Background(), "trace-001")
     l.Info(ctx, "custom logger test")
 }
 ```
@@ -88,7 +93,7 @@ func main() {
 JSON 格式，便于日志收集系统处理：
 
 ```go
-l := log.New(log.WithFormatter(&log.JSONFormatter{}))
+l := logs.New(logs.WithFormatter(&logs.JSONFormatter{}))
 ```
 
 输出：
@@ -102,17 +107,17 @@ l := log.New(log.WithFormatter(&log.JSONFormatter{}))
 ### 全局 Logger
 
 ```go
-log.Debug(ctx, format, args...)
-log.Info(ctx, format, args...)
-log.Warn(ctx, format, args...)
-log.Error(ctx, format, args...)
-log.Fatal(ctx, format, args...)
+logs.Debug(ctx, format, args...)
+logs.Info(ctx, format, args...)
+logs.Warn(ctx, format, args...)
+logs.Error(ctx, format, args...)
+logs.Fatal(ctx, format, args...)
 ```
 
 ### 自定义 Logger
 
 ```go
-l := log.New(opts...)
+l := logs.New(opts...)
 l.Debug(ctx, format, args...)
 l.Info(ctx, format, args...)
 l.Warn(ctx, format, args...)
@@ -123,9 +128,17 @@ l.Fatal(ctx, format, args...)
 ### Options
 
 ```go
-log.WithLevel(level)           // 设置日志级别
-log.WithOutput(writer)         // 设置输出目标，默认 os.Stdout
-log.WithFormatter(formatter)   // 设置格式化器
+logs.WithLevel(level)           // 设置日志级别
+logs.WithOutput(writer)         // 设置输出目标，默认 os.Stdout
+logs.WithFormatter(formatter)   // 设置格式化器
+```
+
+### Trace ID
+
+```go
+logs.NewTraceID()                      // 生成 128 位随机 trace ID (32 位 hex 字符串)
+logs.NewContext(ctx)                    // 生成新 context 并自动注入 trace_id
+logs.WithTraceID(ctx, traceID)          // 将指定 trace_id 注入 context
 ```
 
 ## 性能

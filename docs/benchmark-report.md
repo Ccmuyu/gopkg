@@ -21,9 +21,9 @@
 | **errors** | New | 0.47 ns | 0 B | 0 |
 | **errors** | Wrap | 301.2 ns | 56 B | 2 |
 | **errors** | Is | 19.22 ns | 0 B | 0 |
-| **log** | BenchmarkLog | 1476 ns | 542 B | 5 |
-| **log** | BenchmarkLogWithCtx | 1315 ns | 401 B | 5 |
-| **log** | BenchmarkDefaultLogger | 1334 ns | 426 B | 5 |
+| **logs** | BenchmarkLog | 1476 ns | 542 B | 5 |
+| **logs** | BenchmarkLogWithCtx | 1315 ns | 401 B | 5 |
+| **logs** | BenchmarkDefaultLogger | 1334 ns | 426 B | 5 |
 | **maps** | Keys | 27668 ns | 8192 B | 1 |
 | **maps** | Values | 27488 ns | 8192 B | 1 |
 | **maps** | HasKey | 12.91 ns | 0 B | 0 |
@@ -116,7 +116,7 @@
 
 ### 低优先级
 
-1. **log** - 每次 5 次分配，可考虑使用 sync.Pool
+1. **logs** - 每次 5 次分配，可考虑使用 sync.Pool
 2. **maps.Keys/Values** - 固定 8KB 分配
 3. **bytes.HexEncode** - 固定 4KB 分配
 
