@@ -11,7 +11,8 @@ go get github.com/Ccmuyu/gopkg
 ## 工具包概览
 
 | 包 | 说明 |
-|---|---|
+|---|---|---|
+| `maths` | 数学计算：比大小、绝对值、求和、素数判断等 |
 | `conv` | 类型转换：指针、字符串、JSON |
 | `slices` | 切片操作：过滤、映射、去重、分组等 |
 | `maps` | Map 操作：Keys、Values、Merge、MergeWith、Filter、Map、MapKey、Pick、Omit、Invert、ForEach、IsEqual 等 |

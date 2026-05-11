@@ -5,7 +5,8 @@
 已完成全部规划功能：
 
 | 包 | 功能 | 状态 |
-|---|---|---|
+|---|---|---|---|
+| `maths` | Min、Max、Clamp、Abs、Sum、Average、Pow、IsPrime、GCD、LCM、Fibonacci | ✅ 已实现 |
 | `conv` | 指针转换、str子包、json子包 | ✅ 已实现 |
 | `slices` | Split、Dedup、Filter、Map、FlatMap、Merge、Contains、Index、Reverse、GroupBy | ✅ 已实现 |
 | `maps` | Keys、Values、Filter、Map、Merge、Clone、Get、Set、HasKey | ✅ 已实现 |
