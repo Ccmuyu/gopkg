@@ -12,17 +12,17 @@ go get github.com/Ccmuyu/gopkg
 
 | 包 | 说明 |
 |---|---|
-| `maths` | 数学计算：比大小、绝对值、求和、素数判断等 |
+| `maths` | 数学计算：比大小、绝对值、求和、素数判断、Round、Floor、Ceil、MinSlice、MaxSlice、Factorial、Median 等 |
 | `conv` | 类型转换：指针、字符串、JSON |
-| `slices` | 切片操作：过滤、映射、去重、分组、Reduce、集合运算等 |
+| `slices` | 切片操作：过滤、映射、去重、分组、Reduce、集合运算、Sort、Fill、Take、Drop 等 |
 | `maps` | Map 操作：Keys、Values、Merge、MergeWith、Filter、Map、MapKey、Pick、Omit、Invert、ForEach、IsEqual 等 |
-| `str` | 字符串工具：Trim、Split、Contains、Ellipsis 等 |
-| `errors` | 错误处理：Wrap、Is、As、Join |
+| `str` | 字符串工具：Trim、Split、Contains、Ellipsis、After、Before、Between、Reverse、Pad、Truncate、大小写转换、脱敏等 |
+| `errors` | 错误处理：Wrap、Is、As、Join、MultiError、PanicToError |
 | `validation` | 校验工具：IsEmail、IsPhone、IsURL、IsUUID、IsCreditCard、IsJSON 等 |
 | `net/ip` | IP 处理：IsValid、IsPrivate、ToInt |
 | `net/url` | URL 处理：Parse、ParseQuery、Build |
 | `bytes` | 字节操作：Hex、Base64、HumanReadable，含 string 便捷变体 |
-| `crypto` | 加密哈希：MD5、SHA1、SHA256 |
+| `crypto` | 加密哈希：MD5、SHA1、SHA256、SHA512、HMAC、CRC32、RandomToken |
 | `logs` | 日志库：支持 context、多种级别、Formatter |
 | `sorts` | 排序：Sort、SortFunc、SortFuncStable 支持自定义比较器 |
 | `times` | 时间工具：Format、Parse、BeginOfDay、DaysBetween 等 |
@@ -32,7 +32,8 @@ go get github.com/Ccmuyu/gopkg
 | `fn` | 函数式辅助：谓词组合、元组 |
 | `file` | 文件操作：Exists、Read、Write、Copy、Move |
 | `env` | 环境变量：Get、MustGet、EnvironMap |
-| `test` | 测试工具：AssertEqual、AssertSliceEqual |
+| `retry` | 重试机制：支持最大次数、延迟、退避、抖动 |
+| `test` | 测试工具：AssertEqual、AssertSliceEqual、AssertNil、AssertError、AssertPanic、AssertMatch 等 |
 
 ## 快速开始
 
