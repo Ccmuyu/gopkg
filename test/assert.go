@@ -43,3 +43,12 @@ func ContainsStr(s, substr string) bool {
 	}
 	return false
 }
+
+func SliceContains[T comparable](arr []T, target T) bool {
+	for _, v := range arr {
+		if v == target {
+			return true
+		}
+	}
+	return false
+}

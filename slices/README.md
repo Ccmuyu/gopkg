@@ -52,4 +52,13 @@ func Index[T comparable](arr []T, target T) int
 func Split[T any](s []T, chunk int) [][]T
 func Reverse[T any](arr []T)
 func GroupBy[T any, K comparable](arr []T, fn func(T) K) map[K][]T
+func Reduce[T any, R any](arr []T, initial R, fn func(R, T) R) R
+func Some[T any](arr []T, fn func(T) bool) bool
+func Every[T any](arr []T, fn func(T) bool) bool
+func None[T any](arr []T, fn func(T) bool) bool
+func Without[T comparable](arr []T, items ...T) []T
+func Intersection[T comparable](a, b []T) []T
+func Union[T comparable](slices ...[]T) []T
+func Difference[T comparable](a, b []T) (inANotB, inBNotA []T)
+func Chunk[T any](s []T, size int) [][]T
 ```

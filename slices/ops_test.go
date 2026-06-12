@@ -81,3 +81,75 @@ func TestGroupBy(t *testing.T) {
 	gtest.AssertEqual(t, len(result[25]), 2)
 	gtest.AssertEqual(t, len(result[30]), 2)
 }
+
+func TestReduce(t *testing.T) {
+	sum := Reduce([]int{1, 2, 3, 4, 5}, 0, func(acc, v int) int {
+		return acc + v
+	})
+	gtest.AssertEqual(t, sum, 15)
+}
+
+func TestSome(t *testing.T) {
+	gtest.AssertTrue(t, Some([]int{1, 2, 3, 4, 5}, func(v int) bool {
+		return v > 3
+	}))
+	gtest.AssertTrue(t, !Some([]int{1, 2, 3}, func(v int) bool {
+		return v > 5
+	}))
+	gtest.AssertTrue(t, !Some([]int{}, func(v int) bool {
+		return true
+	}))
+}
+
+func TestEvery(t *testing.T) {
+	gtest.AssertTrue(t, Every([]int{2, 4, 6, 8}, func(v int) bool {
+		return v%2 == 0
+	}))
+	gtest.AssertTrue(t, !Every([]int{2, 4, 5, 8}, func(v int) bool {
+		return v%2 == 0
+	}))
+	gtest.AssertTrue(t, Every([]int{}, func(v int) bool {
+		return false
+	}))
+}
+
+func TestNone(t *testing.T) {
+	gtest.AssertTrue(t, None([]int{1, 3, 5}, func(v int) bool {
+		return v%2 == 0
+	}))
+	gtest.AssertTrue(t, !None([]int{1, 2, 3}, func(v int) bool {
+		return v%2 == 0
+	}))
+}
+
+func TestWithout(t *testing.T) {
+	gtest.AssertSliceEqual(t, Without([]int{1, 2, 3, 4, 5}, 2, 4), []int{1, 3, 5})
+	gtest.AssertSliceEqual(t, Without([]int{1, 1, 2, 2}, 1), []int{2, 2})
+	gtest.AssertSliceEqual(t, Without([]int{}, 1), []int{})
+}
+
+func TestIntersection(t *testing.T) {
+	gtest.AssertSliceEqual(t, Intersection([]int{1, 2, 3, 4}, []int{3, 4, 5, 6}), []int{3, 4})
+	gtest.AssertEqual(t, len(Intersection([]int{1, 2}, []int{3, 4})), 0)
+}
+
+func TestUnion(t *testing.T) {
+	gtest.AssertSliceEqual(t, Union([]int{1, 2, 3}, []int{3, 4, 5}), []int{1, 2, 3, 4, 5})
+	gtest.AssertSliceEqual(t, Union([]int{1, 2}, []int{2, 3}, []int{3, 4}), []int{1, 2, 3, 4})
+}
+
+func TestDifference(t *testing.T) {
+	a, b := Difference([]int{1, 2, 3, 4}, []int{3, 4, 5, 6})
+	gtest.AssertSliceEqual(t, a, []int{1, 2})
+	gtest.AssertSliceEqual(t, b, []int{5, 6})
+}
+
+func TestChunk(t *testing.T) {
+	chunks := Chunk([]int{1, 2, 3, 4, 5, 6}, 3)
+	gtest.AssertEqual(t, len(chunks), 2)
+	gtest.AssertSliceEqual(t, chunks[0], []int{1, 2, 3})
+	gtest.AssertSliceEqual(t, chunks[1], []int{4, 5, 6})
+
+	chunks2 := Chunk([]int{1, 2, 3, 4, 5}, 2)
+	gtest.AssertEqual(t, len(chunks2), 3)
+}

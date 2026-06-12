@@ -44,3 +44,27 @@ func BenchmarkIsMatch(b *testing.B) {
 		IsMatch(s, pattern)
 	}
 }
+
+func BenchmarkIsUUID(b *testing.B) {
+	s := "550e8400-e29b-41d4-a716-446655440000"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		IsUUID(s)
+	}
+}
+
+func BenchmarkIsJSON(b *testing.B) {
+	s := `{"key":"value","number":42}`
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		IsJSON(s)
+	}
+}
+
+func BenchmarkIsCreditCard(b *testing.B) {
+	s := "4111111111111111"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		IsCreditCard(s)
+	}
+}
