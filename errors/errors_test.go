@@ -50,6 +50,42 @@ func TestJoin(t *testing.T) {
 	gtest.AssertTrue(t, joined != nil)
 }
 
+func TestMultiError(t *testing.T) {
+	m := &MultiError{}
+	gtest.AssertTrue(t, !m.HasError())
+	gtest.AssertEqual(t, m.Error(), "")
+
+	m.Append(New("err1"))
+	m.Append(nil)
+	m.Append(New("err2"))
+	gtest.AssertTrue(t, m.HasError())
+	gtest.AssertTrue(t, gtest.ContainsStr(m.Error(), "err1"))
+	gtest.AssertTrue(t, gtest.ContainsStr(m.Error(), "err2"))
+}
+
+func TestPanicToError(t *testing.T) {
+	err := PanicToError(func() {
+		panic("something went wrong")
+	})
+	gtest.AssertTrue(t, err != nil)
+	gtest.AssertEqual(t, err.Error(), "something went wrong")
+}
+
+func TestPanicToErrorNoPanic(t *testing.T) {
+	err := PanicToError(func() {
+		// no panic
+	})
+	gtest.AssertTrue(t, err == nil)
+}
+
+func TestPanicToErrorWithError(t *testing.T) {
+	sentinel := New("sentinel")
+	err := PanicToError(func() {
+		panic(sentinel)
+	})
+	gtest.AssertTrue(t, Is(err, sentinel))
+}
+
 type parseError struct {
 	msg string
 }

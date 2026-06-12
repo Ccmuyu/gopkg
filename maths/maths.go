@@ -113,3 +113,86 @@ func Fibonacci(n int) []int {
 	}
 	return result
 }
+
+func Round(f float64) float64 {
+	if f < 0 {
+		return -Round(-f)
+	}
+	return float64(int(f + 0.5))
+}
+
+func Floor(f float64) float64 {
+	if f < 0 {
+		return float64(int(f) - 1)
+	}
+	return float64(int(f))
+}
+
+func Ceil(f float64) float64 {
+	if f < 0 {
+		return float64(int(f))
+	}
+	if f == float64(int(f)) {
+		return f
+	}
+	return float64(int(f) + 1)
+}
+
+func MinSlice[T cmp.Ordered](arr []T) T {
+	if len(arr) == 0 {
+		var zero T
+		return zero
+	}
+	min := arr[0]
+	for _, v := range arr[1:] {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+
+func MaxSlice[T cmp.Ordered](arr []T) T {
+	if len(arr) == 0 {
+		var zero T
+		return zero
+	}
+	max := arr[0]
+	for _, v := range arr[1:] {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+func Factorial(n int) int {
+	if n < 0 {
+		return 0
+	}
+	result := 1
+	for i := 2; i <= n; i++ {
+		result *= i
+	}
+	return result
+}
+
+func Median[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64](nums ...T) float64 {
+	n := len(nums)
+	if n == 0 {
+		return 0
+	}
+	sorted := make([]T, n)
+	copy(sorted, nums)
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			if sorted[i] > sorted[j] {
+				sorted[i], sorted[j] = sorted[j], sorted[i]
+			}
+		}
+	}
+	if n%2 == 0 {
+		return float64(sorted[n/2-1]+sorted[n/2]) / 2
+	}
+	return float64(sorted[n/2])
+}

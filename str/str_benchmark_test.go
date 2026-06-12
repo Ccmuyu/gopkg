@@ -36,3 +36,35 @@ func BenchmarkEllipsis(b *testing.B) {
 		Ellipsis(s, 10)
 	}
 }
+
+func BenchmarkAfter(b *testing.B) {
+	s := "user@example.com"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		After(s, "@")
+	}
+}
+
+func BenchmarkReverse(b *testing.B) {
+	s := "hello world example string"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Reverse(s)
+	}
+}
+
+func BenchmarkToCamel(b *testing.B) {
+	s := "hello_world_example_string"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ToCamel(s)
+	}
+}
+
+func BenchmarkMask(b *testing.B) {
+	s := "13812345678"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Mask(s, 3, '*')
+	}
+}

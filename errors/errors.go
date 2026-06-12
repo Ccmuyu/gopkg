@@ -38,3 +38,43 @@ func As(err error, target any) bool {
 func Join(errs ...error) error {
 	return errors.Join(errs...)
 }
+
+type MultiError struct {
+	Errors []error
+}
+
+func (m *MultiError) Error() string {
+	if len(m.Errors) == 0 {
+		return ""
+	}
+	msg := m.Errors[0].Error()
+	for _, err := range m.Errors[1:] {
+		msg += "; " + err.Error()
+	}
+	return msg
+}
+
+func (m *MultiError) Append(err error) {
+	if err != nil {
+		m.Errors = append(m.Errors, err)
+	}
+}
+
+func (m *MultiError) HasError() bool {
+	return len(m.Errors) > 0
+}
+
+func PanicToError(fn func()) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch v := r.(type) {
+			case error:
+				err = v
+			default:
+				err = fmt.Errorf("%v", v)
+			}
+		}
+	}()
+	fn()
+	return
+}

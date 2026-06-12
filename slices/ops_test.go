@@ -153,3 +153,28 @@ func TestChunk(t *testing.T) {
 	chunks2 := Chunk([]int{1, 2, 3, 4, 5}, 2)
 	gtest.AssertEqual(t, len(chunks2), 3)
 }
+
+func TestSort(t *testing.T) {
+	arr := []int{3, 1, 4, 1, 5}
+	Sort(arr)
+	gtest.AssertSliceEqual(t, arr, []int{1, 1, 3, 4, 5})
+}
+
+func TestFill(t *testing.T) {
+	arr := make([]int, 5)
+	Fill(arr, 42)
+	gtest.AssertSliceEqual(t, arr, []int{42, 42, 42, 42, 42})
+}
+
+func TestTake(t *testing.T) {
+	gtest.AssertSliceEqual(t, Take([]int{1, 2, 3, 4, 5}, 3), []int{1, 2, 3})
+	gtest.AssertSliceEqual(t, Take([]int{1, 2, 3, 4, 5}, 10), []int{1, 2, 3, 4, 5})
+	gtest.AssertSliceEqual(t, Take([]int{1, 2, 3}, 0), []int{})
+	gtest.AssertSliceEqual(t, Take([]int{1, 2, 3}, -1), []int{})
+}
+
+func TestDrop(t *testing.T) {
+	gtest.AssertSliceEqual(t, Drop([]int{1, 2, 3, 4, 5}, 2), []int{3, 4, 5})
+	gtest.AssertSliceEqual(t, Drop([]int{1, 2, 3}, 10), []int{})
+	gtest.AssertSliceEqual(t, Drop([]int{1, 2, 3}, 0), []int{1, 2, 3})
+}

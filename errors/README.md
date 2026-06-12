@@ -19,6 +19,17 @@ errors.Is(err, targetErr)   // true/false
 errors.As(err, &targetType) // true/false
 
 joined := errors.Join(err1, err2, err3)
+
+// MultiError 聚合
+m := &errors.MultiError{}
+m.Append(err1)
+m.Append(err2)
+m.HasError()  // true
+
+// PanicToError 安全执行
+err := errors.PanicToError(func() {
+    panic("something")
+})
 ```
 
 ## API 参考
@@ -31,4 +42,10 @@ func Wrapf(err error, format string, args ...any) error
 func Is(err, target error) bool
 func As(err error, target any) bool
 func Join(errs ...error) error
+func PanicToError(fn func()) (err error)
+
+type MultiError struct { Errors []error }
+func (m *MultiError) Error() string
+func (m *MultiError) Append(err error)
+func (m *MultiError) HasError() bool
 ```

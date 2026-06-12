@@ -1,5 +1,10 @@
 package slices
 
+import (
+	"cmp"
+	"sort"
+)
+
 func Dedup[T comparable](arr []T) []T {
 	if len(arr) == 0 {
 		return arr
@@ -228,4 +233,44 @@ func Difference[T comparable](a, b []T) (inANotB, inBNotA []T) {
 
 func Chunk[T any](s []T, size int) [][]T {
 	return Split(s, size)
+}
+
+func Sort[T cmp.Ordered](arr []T) {
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i] < arr[j]
+	})
+}
+
+func Fill[T any](arr []T, val T) {
+	for i := range arr {
+		arr[i] = val
+	}
+}
+
+func Take[T any](arr []T, n int) []T {
+	if n <= 0 {
+		return []T{}
+	}
+	if n >= len(arr) {
+		result := make([]T, len(arr))
+		copy(result, arr)
+		return result
+	}
+	result := make([]T, n)
+	copy(result, arr[:n])
+	return result
+}
+
+func Drop[T any](arr []T, n int) []T {
+	if n <= 0 {
+		result := make([]T, len(arr))
+		copy(result, arr)
+		return result
+	}
+	if n >= len(arr) {
+		return []T{}
+	}
+	result := make([]T, len(arr)-n)
+	copy(result, arr[n:])
+	return result
 }

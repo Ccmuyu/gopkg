@@ -109,3 +109,53 @@ func TestFibonacci(t *testing.T) {
 func TestFibonacciNegative(t *testing.T) {
 	AssertSliceEqual(t, Fibonacci(-1), []int{})
 }
+
+func TestRound(t *testing.T) {
+	AssertEqual(t, Round(3.4), 3.0)
+	AssertEqual(t, Round(3.5), 4.0)
+	AssertEqual(t, Round(-3.4), -3.0)
+	AssertEqual(t, Round(-3.5), -4.0)
+	AssertEqual(t, Round(0.0), 0.0)
+}
+
+func TestFloor(t *testing.T) {
+	AssertEqual(t, Floor(3.7), 3.0)
+	AssertEqual(t, Floor(-3.7), -4.0)
+	AssertEqual(t, Floor(0.0), 0.0)
+}
+
+func TestCeil(t *testing.T) {
+	AssertEqual(t, Ceil(3.2), 4.0)
+	AssertEqual(t, Ceil(-3.2), -3.0)
+	AssertEqual(t, Ceil(3.0), 3.0)
+	AssertEqual(t, Ceil(0.0), 0.0)
+}
+
+func TestMinSlice(t *testing.T) {
+	AssertEqual(t, MinSlice([]int{3, 1, 4, 1, 5}), 1)
+	AssertEqual(t, MinSlice([]int{5, 4, 3, 2, 1}), 1)
+	AssertEqual(t, MinSlice([]string{"b", "a", "c"}), "a")
+	AssertEqual(t, MinSlice([]int{}), 0)
+}
+
+func TestMaxSlice(t *testing.T) {
+	AssertEqual(t, MaxSlice([]int{3, 1, 4, 1, 5}), 5)
+	AssertEqual(t, MaxSlice([]int{1, 2, 3, 4, 5}), 5)
+	AssertEqual(t, MaxSlice([]string{"a", "b", "c"}), "c")
+	AssertEqual(t, MaxSlice([]int{}), 0)
+}
+
+func TestFactorial(t *testing.T) {
+	AssertEqual(t, Factorial(0), 1)
+	AssertEqual(t, Factorial(1), 1)
+	AssertEqual(t, Factorial(5), 120)
+	AssertEqual(t, Factorial(10), 3628800)
+	AssertEqual(t, Factorial(-1), 0)
+}
+
+func TestMedian(t *testing.T) {
+	AssertEqual(t, Median(1, 2, 3, 4, 5), 3.0)
+	AssertEqual(t, Median(1, 2, 3, 4), 2.5)
+	AssertEqual(t, Median(1.5, 2.5, 3.5), 2.5)
+	AssertEqual(t, Median[int](), 0.0)
+}
