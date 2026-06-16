@@ -69,6 +69,8 @@ func CRC32String(s string) uint32 {
 
 func RandomToken(n int) string {
 	b := make([]byte, n)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
 	return base64.URLEncoding.EncodeToString(b)
 }

@@ -3,17 +3,17 @@ package test
 import (
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
-func AssertEqual(t *testing.T, actual, expected interface{}) {
+func AssertEqual(t *testing.T, actual, expected any) {
 	if actual != expected {
 		t.Errorf("[AssertEqual] actual: %v\nexpected: %v", actual, expected)
-		return
 	}
 }
 
-func AssertNotEqual(t *testing.T, actual, expected interface{}) {
+func AssertNotEqual(t *testing.T, actual, expected any) {
 	if actual == expected {
 		t.Errorf("[AssertNotEqual] actual: %v\nexpected: %v", actual, expected)
 	}
@@ -37,15 +37,32 @@ func AssertSliceEqual[T any](t *testing.T, actual, expected []T) {
 	}
 }
 
-func AssertNil(t *testing.T, v interface{}) {
-	if v != nil && !reflect.ValueOf(v).IsNil() {
-		t.Errorf("[AssertNil] expected nil, got %v", v)
+func AssertNil(t *testing.T, v any) {
+	if v == nil {
+		return
+	}
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan, reflect.Func:
+		if !val.IsNil() {
+			t.Errorf("[AssertNil] expected nil, got %v", v)
+		}
+	default:
+		t.Errorf("[AssertNil] expected nil, got %v (non-nilable type)", v)
 	}
 }
 
-func AssertNotNil(t *testing.T, v interface{}) {
-	if v == nil || reflect.ValueOf(v).IsNil() {
+func AssertNotNil(t *testing.T, v any) {
+	if v == nil {
 		t.Errorf("[AssertNotNil] expected non-nil, got nil")
+		return
+	}
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan, reflect.Func:
+		if val.IsNil() {
+			t.Errorf("[AssertNotNil] expected non-nil, got nil")
+		}
 	}
 }
 
@@ -88,12 +105,7 @@ func AssertMatch(t *testing.T, s, pattern string) {
 }
 
 func ContainsStr(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
+	return strings.Contains(s, substr)
 }
 
 func SliceContains[T comparable](arr []T, target T) bool {

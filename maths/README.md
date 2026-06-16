@@ -22,6 +22,11 @@ maths.IsPrime(17)                   // true
 maths.GCD(12, 8)                    // 4
 maths.LCM(4, 6)                     // 12
 maths.Fibonacci(5)                  // [0, 1, 1, 2, 3]
+maths.Round(3.5)                    // 4.0
+maths.Floor(3.7)                    // 3.0
+maths.Ceil(3.2)                     // 4.0
+maths.Factorial(5)                  // 120
+maths.Median(1, 2, 3, 4, 5)        // 3.0
 ```
 
 ## API 参考
@@ -30,7 +35,7 @@ maths.Fibonacci(5)                  // [0, 1, 1, 2, 3]
 func Min[T cmp.Ordered](a, b T) T
 func Max[T cmp.Ordered](a, b T) T
 func Clamp[T cmp.Ordered](val, low, high T) T
-func Abs[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64](x T) T
+func Abs[T Numeric](x T) T
 func Sum[T Numeric](nums ...T) T
 func Average[T Numeric](nums ...T) float64
 func Pow(base, exp int) int
@@ -38,4 +43,11 @@ func IsPrime(n int) bool
 func GCD(a, b int) int
 func LCM(a, b int) int
 func Fibonacci(n int) []int
+func Round(f float64) float64
+func Floor(f float64) float64
+func Ceil(f float64) float64
+func MinSlice[T cmp.Ordered](arr []T) T
+func MaxSlice[T cmp.Ordered](arr []T) T
+func Factorial(n int) int
+func Median[T Numeric](nums ...T) float64
 ```

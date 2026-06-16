@@ -3,6 +3,9 @@ package bytes
 import (
 	"encoding/hex"
 	"encoding/base64"
+	"math"
+	"strconv"
+	"strings"
 )
 
 func HexEncode(src []byte) string {
@@ -11,10 +14,6 @@ func HexEncode(src []byte) string {
 
 func HexDecode(s string) ([]byte, error) {
 	return hex.DecodeString(s)
-}
-
-func HexEncodeToString(src []byte) string {
-	return hex.EncodeToString(src)
 }
 
 func Base64Encode(src []byte) string {
@@ -59,6 +58,12 @@ func Base64URLDecodeString(s string) (string, error) {
 
 func HumanReadable(bytes int64) string {
 	const unit = 1024
+	if bytes < 0 {
+		if bytes == math.MinInt64 {
+			return "-9223372036854775808 B"
+		}
+		return "-" + HumanReadable(-bytes)
+	}
 	if bytes < unit {
 		return intToStr(bytes) + " B"
 	}
@@ -73,6 +78,9 @@ func HumanReadable(bytes int64) string {
 var units = []string{"K", "M", "G", "T", "P", "E"}
 
 func intToStr(n int64) string {
+	if n == math.MinInt64 {
+		return "-9223372036854775808"
+	}
 	if n == 0 {
 		return "0"
 	}
@@ -92,24 +100,8 @@ func intToStr(n int64) string {
 }
 
 func floatToStr(f float64) string {
-	if f < 0 {
-		return "-" + floatToStr(-f)
-	}
-	return formatFloat(f)
-}
-
-func formatFloat(f float64) string {
-	if f == float64(int64(f)) {
-		return intToStr(int64(f))
-	}
-	var intPart int64 = int64(f)
-	var result []byte
-	f -= float64(intPart)
-	for i := 0; i < 2; i++ {
-		f *= 10
-		d := byte('0' + int(f)%10)
-		f -= float64(int(f))
-		result = append(result, d)
-	}
-	return intToStr(intPart) + "." + string(result)
+	s := strconv.FormatFloat(f, 'f', 2, 64)
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimRight(s, ".")
+	return s
 }

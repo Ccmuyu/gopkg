@@ -29,6 +29,19 @@ func TestMustUnmarshal(t *testing.T) {
 	AssertEqual(t, m["a"], 1)
 }
 
+func TestMustMarshalPanic(t *testing.T) {
+	AssertPanic(t, func() {
+		MustMarshal(make(chan int))
+	})
+}
+
+func TestMustUnmarshalPanic(t *testing.T) {
+	AssertPanic(t, func() {
+		var m map[string]int
+		MustUnmarshal(`{invalid}`, &m)
+	})
+}
+
 func TestMarshalIndent(t *testing.T) {
 	s, _ := MarshalIndent(map[string]int{"a": 1}, "", "  ")
 	AssertEqual(t, string(s), "{\n  \"a\": 1\n}")

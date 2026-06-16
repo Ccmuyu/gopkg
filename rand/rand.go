@@ -30,7 +30,9 @@ func Bytes(n int) []byte {
 		return nil
 	}
 	b := make([]byte, n)
-	_, _ = crand.Read(b)
+	if _, err := crand.Read(b); err != nil {
+		return nil
+	}
 	return b
 }
 

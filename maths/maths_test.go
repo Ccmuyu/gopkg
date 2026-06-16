@@ -44,6 +44,11 @@ func TestAbsInt8(t *testing.T) {
 	AssertEqual(t, Abs(x), int8(7))
 }
 
+func TestAbsInt8Min(t *testing.T) {
+	var x int8 = -128
+	AssertEqual(t, Abs(x), int8(-128))
+}
+
 func TestSum(t *testing.T) {
 	AssertEqual(t, Sum(1, 2, 3, 4, 5), 15)
 	AssertEqual(t, Sum(1), 1)
@@ -121,6 +126,7 @@ func TestRound(t *testing.T) {
 func TestFloor(t *testing.T) {
 	AssertEqual(t, Floor(3.7), 3.0)
 	AssertEqual(t, Floor(-3.7), -4.0)
+	AssertEqual(t, Floor(-3.0), -3.0)
 	AssertEqual(t, Floor(0.0), 0.0)
 }
 

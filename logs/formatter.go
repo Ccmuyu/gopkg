@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func formatEntry(entry *Entry) string {
 	traceID := ""
 	if entry.Ctx != nil {
 		if v := entry.Ctx.Value(TraceIDKey); v != nil {
-			traceID = v.(string)
+			traceID, _ = v.(string)
 		}
 	}
 	return formatTime(entry.Time) + " [" + entry.Level.String() + "] " +
@@ -47,10 +48,15 @@ func formatJSONEntry(entry *Entry) string {
 	traceID := ""
 	if entry.Ctx != nil {
 		if v := entry.Ctx.Value(TraceIDKey); v != nil {
-			traceID = v.(string)
+			traceID, _ = v.(string)
 		}
 	}
-	return `{"time":"` + formatTime(entry.Time) + `","level":"` +
-		entry.Level.String() + `","trace_id":"` + traceID +
-		`","msg":"` + entry.Msg + `"` + "}\n"
+	data, _ := json.Marshal(map[string]string{
+		"time":     formatTime(entry.Time),
+		"level":    entry.Level.String(),
+		"trace_id": traceID,
+		"msg":      entry.Msg,
+	})
+	return string(data) + "\n"
 }
+

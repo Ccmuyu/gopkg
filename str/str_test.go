@@ -53,6 +53,7 @@ func TestReplace(t *testing.T) {
 func TestEllipsis(t *testing.T) {
 	AssertEqual(t, Ellipsis("hello world", 5), "hello...")
 	AssertEqual(t, Ellipsis("hi", 5), "hi")
+	AssertEqual(t, Ellipsis("你好世界", 2), "你好...")
 }
 
 func TestIsEmpty(t *testing.T) {
@@ -104,6 +105,7 @@ func TestReverse(t *testing.T) {
 func TestPadLeft(t *testing.T) {
 	AssertEqual(t, PadLeft("42", 5, "0"), "00042")
 	AssertEqual(t, PadLeft("hello", 3, " "), "hello")
+	AssertEqual(t, PadLeft("你好", 4, " "), "  你好")
 }
 
 func TestPadRight(t *testing.T) {
@@ -115,6 +117,7 @@ func TestTruncate(t *testing.T) {
 	AssertEqual(t, Truncate("hello world", 5), "hello")
 	AssertEqual(t, Truncate("hi", 5), "hi")
 	AssertEqual(t, Truncate("hello", -1), "hello")
+	AssertEqual(t, Truncate("你好世界", 2), "你好")
 }
 
 func TestCapitalize(t *testing.T) {

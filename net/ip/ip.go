@@ -2,6 +2,7 @@ package ip
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
@@ -14,16 +15,15 @@ func IsPrivate(s string) bool {
 	if ip == nil {
 		return false
 	}
-	privateBlocks := []string{
-		"10.0.0.0/8",
-		"172.16.0.0/12",
-		"192.168.0.0/16",
-		"127.0.0.0/8",
-		"fc00::/7",
-		"::1/128",
+	privateBlocks := []*net.IPNet{
+		mustCIDR("10.0.0.0/8"),
+		mustCIDR("172.16.0.0/12"),
+		mustCIDR("192.168.0.0/16"),
+		mustCIDR("127.0.0.0/8"),
+		mustCIDR("fc00::/7"),
+		mustCIDR("::1/128"),
 	}
-	for _, block := range privateBlocks {
-		_, cidr, _ := net.ParseCIDR(block)
+	for _, cidr := range privateBlocks {
 		if cidr.Contains(ip) {
 			return true
 		}
@@ -31,10 +31,18 @@ func IsPrivate(s string) bool {
 	return false
 }
 
+func mustCIDR(s string) *net.IPNet {
+	_, cidr, err := net.ParseCIDR(s)
+	if err != nil {
+		panic("invalid CIDR: " + s)
+	}
+	return cidr
+}
+
 func ToInt(s string) (int64, error) {
 	ip := net.ParseIP(s)
 	if ip == nil {
-		return 0, nil
+		return 0, fmt.Errorf("invalid IP: %s", s)
 	}
 	ip4 := ip.To4()
 	if ip4 != nil {
@@ -44,7 +52,7 @@ func ToInt(s string) (int64, error) {
 		}
 		return val, nil
 	}
-	return 0, nil
+	return 0, fmt.Errorf("IPv6 not supported: %s", s)
 }
 
 func IntToIP(n int64) string {
@@ -57,7 +65,7 @@ func IntToIP(n int64) string {
 }
 
 func ToJSON(s string) ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
+	return json.Marshal(map[string]any{
 		"ip": s,
 	})
 }

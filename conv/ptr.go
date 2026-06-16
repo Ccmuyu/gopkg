@@ -65,11 +65,11 @@ func Int64Ptr(e int64) *int64 {
 	return &e
 }
 
-func IntPtr2Int64Ptr(i *int) *int64 {
-	if i == nil {
-		return nil
+func Int64PtrToInt(v *int64) int {
+	if v == nil {
+		return 0
 	}
-	return Int64Ptr(int64(*i))
+	return int(*v)
 }
 
 func Int64PtrToIntPtr(v *int64) *int {
@@ -77,13 +77,6 @@ func Int64PtrToIntPtr(v *int64) *int {
 		return nil
 	}
 	return IntPtr(int(*v))
-}
-
-func Int64PtrToInt(v *int64) int {
-	if v == nil {
-		return 0
-	}
-	return int(*v)
 }
 
 func IntPtrToInt64Ptr(v *int) *int64 {

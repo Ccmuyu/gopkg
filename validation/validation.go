@@ -92,7 +92,7 @@ func IsMAC(s string) bool {
 }
 
 func IsJSON(s string) bool {
-	var js interface{}
+	var js any
 	return json.Unmarshal([]byte(s), &js) == nil
 }
 
@@ -139,7 +139,13 @@ func luhnCheck(s string) bool {
 	return sum%10 == 0
 }
 
-var regexCache sync.Map
+var (
+	regexCache   sync.Map
+	regexCacheMu sync.Mutex
+	regexCount   int
+)
+
+const regexCacheMax = 1024
 
 func IsMatch(s string, pattern string) bool {
 	if cached, ok := regexCache.Load(pattern); ok {
@@ -149,6 +155,13 @@ func IsMatch(s string, pattern string) bool {
 	if err != nil {
 		return false
 	}
+	regexCacheMu.Lock()
+	if regexCount >= regexCacheMax {
+		regexCacheMu.Unlock()
+		return re.MatchString(s)
+	}
+	regexCount++
+	regexCacheMu.Unlock()
 	regexCache.Store(pattern, re)
 	return re.MatchString(s)
 }
@@ -163,17 +176,24 @@ func IsPrivateIP(s string) bool {
 	if ip == nil {
 		return false
 	}
-	privateBlocks := []string{
-		"10.0.0.0/8",
-		"172.16.0.0/12",
-		"192.168.0.0/16",
-		"127.0.0.0/8",
+	privateBlocks := []*net.IPNet{
+		mustCIDR("10.0.0.0/8"),
+		mustCIDR("172.16.0.0/12"),
+		mustCIDR("192.168.0.0/16"),
+		mustCIDR("127.0.0.0/8"),
 	}
-	for _, block := range privateBlocks {
-		_, cidr, _ := net.ParseCIDR(block)
+	for _, cidr := range privateBlocks {
 		if cidr.Contains(ip) {
 			return true
 		}
 	}
 	return false
+}
+
+func mustCIDR(s string) *net.IPNet {
+	_, cidr, err := net.ParseCIDR(s)
+	if err != nil {
+		panic("invalid CIDR: " + s)
+	}
+	return cidr
 }

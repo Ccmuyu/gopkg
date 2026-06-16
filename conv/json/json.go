@@ -9,7 +9,10 @@ func Marshal(v any) ([]byte, error) {
 }
 
 func MustMarshal(v any) []byte {
-	data, _ := json.Marshal(v)
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
 	return data
 }
 
@@ -18,7 +21,10 @@ func Unmarshal(data string, v any) error {
 }
 
 func MustUnmarshal(data string, v any) {
-	json.Unmarshal([]byte(data), v)
+	err := json.Unmarshal([]byte(data), v)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func MarshalIndent(v any, prefix, indent string) ([]byte, error) {

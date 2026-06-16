@@ -20,8 +20,19 @@ func TestIsPrivate(t *testing.T) {
 }
 
 func TestToInt(t *testing.T) {
-	n, _ := ToInt("192.168.1.1")
+	n, err := ToInt("192.168.1.1")
+	AssertTrue(t, err == nil)
 	AssertEqual(t, n, int64(3232235777))
+}
+
+func TestToIntInvalid(t *testing.T) {
+	_, err := ToInt("invalid")
+	AssertTrue(t, err != nil)
+}
+
+func TestToIntIPv6(t *testing.T) {
+	_, err := ToInt("::1")
+	AssertTrue(t, err != nil)
 }
 
 func TestIntToIP(t *testing.T) {

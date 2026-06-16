@@ -56,10 +56,11 @@ func ReplaceN(s, old, new string, n int) string {
 }
 
 func Ellipsis(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
 		return s
 	}
-	return s[:maxLen] + "..."
+	return string(runes[:maxLen]) + "..."
 }
 
 func IsEmpty(s string) bool {
@@ -123,24 +124,30 @@ func Reverse(s string) string {
 }
 
 func PadLeft(s string, length int, pad string) string {
-	if len(s) >= length {
+	runes := []rune(s)
+	if len(runes) >= length {
 		return s
 	}
-	return strings.Repeat(pad, length-len(s)) + s
+	return strings.Repeat(pad, length-len(runes)) + s
 }
 
 func PadRight(s string, length int, pad string) string {
-	if len(s) >= length {
+	runes := []rune(s)
+	if len(runes) >= length {
 		return s
 	}
-	return s + strings.Repeat(pad, length-len(s))
+	return s + strings.Repeat(pad, length-len(runes))
 }
 
 func Truncate(s string, maxLen int) string {
-	if len(s) <= maxLen || maxLen < 0 {
+	if maxLen < 0 {
 		return s
 	}
-	return s[:maxLen]
+	runes := []rune(s)
+	if len(runes) <= maxLen {
+		return s
+	}
+	return string(runes[:maxLen])
 }
 
 func Capitalize(s string) string {
@@ -195,10 +202,11 @@ func Mask(s string, unmaskLen int, mask rune) string {
 }
 
 func splitWords(s string) []string {
+	runes := []rune(s)
 	var words []string
 	var cur []rune
-	for i, r := range s {
-		if unicode.IsUpper(r) && i > 0 && (unicode.IsLower(rune(s[i-1])) || (i+1 < len(s) && unicode.IsLower(rune(s[i+1])))) {
+	for i, r := range runes {
+		if unicode.IsUpper(r) && i > 0 && (unicode.IsLower(runes[i-1]) || (i+1 < len(runes) && unicode.IsLower(runes[i+1]))) {
 			if len(cur) > 0 {
 				words = append(words, string(cur))
 				cur = nil

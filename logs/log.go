@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -40,7 +41,7 @@ type Logger struct {
 	mu      sync.Mutex
 	level   Level
 	output  io.Writer
-	formater Formatter
+	formatter Formatter
 }
 
 type Option func(*Logger)
@@ -59,7 +60,7 @@ func WithOutput(w io.Writer) Option {
 
 func WithFormatter(f Formatter) Option {
 	return func(l *Logger) {
-		l.formater = f
+		l.formatter = f
 	}
 }
 
@@ -67,7 +68,7 @@ func New(opts ...Option) *Logger {
 	l := &Logger{
 		level:   INFO,
 		output:  os.Stdout,
-		formater: &DefaultFormatter{},
+		formatter: &DefaultFormatter{},
 	}
 	for _, opt := range opts {
 		opt(l)
@@ -75,18 +76,18 @@ func New(opts ...Option) *Logger {
 	return l
 }
 
-var defaultLogger *Logger
+var defaultLogger atomic.Pointer[Logger]
 var once sync.Once
 
 func Default() *Logger {
 	once.Do(func() {
-		defaultLogger = New()
+		defaultLogger.Store(New())
 	})
-	return defaultLogger
+	return defaultLogger.Load()
 }
 
 func SetDefault(l *Logger) {
-	defaultLogger = l
+	defaultLogger.Store(l)
 }
 
 func (l *Logger) log(ctx context.Context, level Level, format string, args ...any) {
@@ -102,7 +103,7 @@ func (l *Logger) log(ctx context.Context, level Level, format string, args ...an
 		Msg:   msg,
 		Ctx:   ctx,
 	}
-	l.output.Write([]byte(l.formater.Format(entry)))
+	l.output.Write([]byte(l.formatter.Format(entry)))
 }
 
 func (l *Logger) Debug(ctx context.Context, format string, args ...any) {

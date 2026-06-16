@@ -100,7 +100,11 @@ func DaysInMonth(year int, month time.Month) int {
 }
 
 func DaysBetween(start, end time.Time) int {
-	return int(end.Sub(start).Hours() / 24)
+	sy, sm, sd := start.Date()
+	ey, em, ed := end.Date()
+	startDate := time.Date(sy, sm, sd, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(ey, em, ed, 0, 0, 0, 0, time.UTC)
+	return int(endDate.Sub(startDate).Hours() / 24)
 }
 
 func Elapsed(t time.Time) time.Duration {

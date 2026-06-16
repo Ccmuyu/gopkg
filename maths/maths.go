@@ -1,6 +1,10 @@
 package maths
 
-import "cmp"
+import (
+	"cmp"
+	"math"
+	"sort"
+)
 
 func Min[T cmp.Ordered](a, b T) T {
 	if a < b {
@@ -28,6 +32,9 @@ func Clamp[T cmp.Ordered](val, low, high T) T {
 
 func Abs[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64](x T) T {
 	if x < 0 {
+		if -x < 0 {
+			return x
+		}
 		return -x
 	}
 	return x
@@ -115,27 +122,15 @@ func Fibonacci(n int) []int {
 }
 
 func Round(f float64) float64 {
-	if f < 0 {
-		return -Round(-f)
-	}
-	return float64(int(f + 0.5))
+	return math.Round(f)
 }
 
 func Floor(f float64) float64 {
-	if f < 0 {
-		return float64(int(f) - 1)
-	}
-	return float64(int(f))
+	return math.Floor(f)
 }
 
 func Ceil(f float64) float64 {
-	if f < 0 {
-		return float64(int(f))
-	}
-	if f == float64(int(f)) {
-		return f
-	}
-	return float64(int(f) + 1)
+	return math.Ceil(f)
 }
 
 func MinSlice[T cmp.Ordered](arr []T) T {
@@ -184,13 +179,7 @@ func Median[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16
 	}
 	sorted := make([]T, n)
 	copy(sorted, nums)
-	for i := 0; i < n; i++ {
-		for j := i + 1; j < n; j++ {
-			if sorted[i] > sorted[j] {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
 	if n%2 == 0 {
 		return float64(sorted[n/2-1]+sorted[n/2]) / 2
 	}

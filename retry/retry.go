@@ -1,6 +1,7 @@
 package retry
 
 import (
+	"context"
 	"math/rand/v2"
 	"time"
 )
@@ -39,6 +40,10 @@ func WithJitter() Option {
 }
 
 func Retry(fn func() error, opts ...Option) error {
+	return RetryCtx(context.Background(), fn, opts...)
+}
+
+func RetryCtx(ctx context.Context, fn func() error, opts ...Option) error {
 	o := &options{
 		maxAttempts: 3,
 		delay:       100 * time.Millisecond,
@@ -54,11 +59,20 @@ func Retry(fn func() error, opts ...Option) error {
 			return nil
 		}
 		if i < o.maxAttempts-1 {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
 			d := delay
 			if o.jitter {
 				d = time.Duration(float64(d) * (0.5 + rand.Float64()))
 			}
-			time.Sleep(d)
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(d):
+			}
 			if o.backoff {
 				delay *= 2
 			}

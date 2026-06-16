@@ -22,7 +22,10 @@ func ParseQuery(s string) (map[string]string, error) {
 }
 
 func Build(base string, params map[string]string) string {
-	u, _ := url.Parse(base)
+	u, err := url.Parse(base)
+	if err != nil {
+		return ""
+	}
 	q := u.Query()
 	for k, v := range params {
 		q.Set(k, v)
@@ -57,12 +60,19 @@ func Encode(s string) string {
 }
 
 func Decode(s string) string {
-	decoded, _ := url.QueryUnescape(s)
+	decoded, err := url.QueryUnescape(s)
+	if err != nil {
+		return s
+	}
 	return decoded
 }
 
 func JoinPath(base string, parts ...string) string {
-	u, _ := url.Parse(base)
-	u.Path = strings.Join(parts, "/")
+	u, err := url.Parse(base)
+	if err != nil {
+		return ""
+	}
+	urlParts := append([]string{u.Path}, parts...)
+	u.Path = strings.Join(urlParts, "/")
 	return u.String()
 }

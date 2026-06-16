@@ -1,6 +1,7 @@
 package bytes
 
 import (
+	"math"
 	"testing"
 
 	. "github.com/Ccmuyu/gopkg/test"
@@ -63,6 +64,14 @@ func TestBase64URLDecodeStringError(t *testing.T) {
 func TestHumanReadable(t *testing.T) {
 	AssertEqual(t, HumanReadable(500), "500 B")
 	AssertEqual(t, HumanReadable(1024), "1 KB")
-	AssertEqual(t, HumanReadable(1536), "1.50 KB")
+	AssertEqual(t, HumanReadable(1536), "1.5 KB")
 	AssertEqual(t, HumanReadable(1048576), "1 MB")
+}
+
+func TestHumanReadableNegative(t *testing.T) {
+	AssertEqual(t, HumanReadable(-1024), "-1 KB")
+}
+
+func TestHumanReadableMinInt64(t *testing.T) {
+	AssertEqual(t, HumanReadable(math.MinInt64), "-9223372036854775808 B")
 }
