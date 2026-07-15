@@ -34,6 +34,7 @@
 | `file` | Exists、IsDir、IsFile、Read、Write、Copy、Move、Remove、ListDir、TempDir、TempFile、Ext、Basename、Dir | ✅ 已实现 |
 | `env` | Get、MustGet、Set、Unset、Has、EnvironMap | ✅ 已实现 |
 | `retry` | Retry、WithMaxAttempts、WithDelay、WithBackoff、WithJitter | ✅ 已实现 |
+| `rate` | 滑动窗口限流、三级规则、Peek/Remaining、FailClosed、HTTP Middleware、Redis Store | ✅ 已实现 |
 | `test` | AssertEqual、AssertTrue、AssertSliceEqual、ContainsStr、SliceContains | ✅ 已实现 |
 | `test` | AssertNil、AssertNotNil、AssertError、AssertNoError、AssertPanic、AssertMatch | ✅ 已实现 |
 

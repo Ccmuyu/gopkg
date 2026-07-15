@@ -33,6 +33,7 @@ go get github.com/Ccmuyu/gopkg
 | `file` | 文件操作：Exists、Read、Write、Copy、Move |
 | `env` | 环境变量：Get、MustGet、EnvironMap |
 | `retry` | 重试机制：支持最大次数、延迟、退避、抖动 |
+| `rate` | 滑动窗口限流：全局/IP/路由、Peek、HTTP 中间件、Redis Store |
 | `test` | 测试工具：AssertEqual、AssertSliceEqual、AssertNil、AssertError、AssertPanic、AssertMatch 等 |
 
 ## 快速开始
