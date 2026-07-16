@@ -1,5 +1,21 @@
 package conv
 
+// Val 解引用任意类型指针，nil 时返回类型零值。
+// 推荐用法，可替代 String/Int/Bool 等一系列特化函数。
+func Val[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
+}
+
+// Ptr 返回任意类型值的指针。
+// 推荐用法，可替代 StringPtr/IntPtr/BoolPtr 等一系列特化函数。
+func Ptr[T any](v T) *T {
+	return &v
+}
+
 func String(v *string) string {
 	if v == nil {
 		return ""

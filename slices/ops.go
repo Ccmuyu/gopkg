@@ -7,7 +7,7 @@ import (
 
 func Dedup[T comparable](arr []T) []T {
 	if len(arr) == 0 {
-		return arr
+		return []T{}
 	}
 	seen := make(map[T]struct{}, len(arr))
 	result := make([]T, 0, len(arr))
@@ -85,7 +85,7 @@ func Split[T any](s []T, chunk int) [][]T {
 		return nil
 	}
 	if length <= chunk {
-		return [][]T{s[:]}
+		return [][]T{s[:length:length]}
 	}
 
 	n := (length + chunk - 1) / chunk
@@ -93,10 +93,10 @@ func Split[T any](s []T, chunk int) [][]T {
 	for i := 0; i < length; i += chunk {
 		next := i + chunk
 		if next > length {
-			data = append(data, s[i:])
+			data = append(data, s[i:length:length])
 			break
 		}
-		data = append(data, s[i:next])
+		data = append(data, s[i:next:next])
 	}
 
 	return data
@@ -149,7 +149,7 @@ func None[T any](arr []T, fn func(T) bool) bool {
 
 func Without[T comparable](arr []T, items ...T) []T {
 	if len(arr) == 0 {
-		return arr
+		return []T{}
 	}
 	skip := make(map[T]struct{}, len(items))
 	for _, item := range items {

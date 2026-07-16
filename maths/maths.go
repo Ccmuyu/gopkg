@@ -93,18 +93,27 @@ func IsPrime(n int) bool {
 	return true
 }
 
+// GCD 返回最大公约数，始终为非负值（对负数输入取绝对值语义）。
 func GCD(a, b int) int {
 	for b != 0 {
 		a, b = b, a%b
 	}
+	if a < 0 {
+		return -a
+	}
 	return a
 }
 
+// LCM 返回最小公倍数，始终为非负值；任一入参为 0 时返回 0。
 func LCM(a, b int) int {
 	if a == 0 || b == 0 {
 		return 0
 	}
-	return a / GCD(a, b) * b
+	l := a / GCD(a, b) * b
+	if l < 0 {
+		return -l
+	}
+	return l
 }
 
 func Fibonacci(n int) []int {

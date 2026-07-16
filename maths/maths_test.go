@@ -96,6 +96,10 @@ func TestGCD(t *testing.T) {
 	AssertEqual(t, GCD(0, 5), 5)
 	AssertEqual(t, GCD(6, 6), 6)
 	AssertEqual(t, GCD(54, 24), 6)
+	// 负数输入返回非负结果
+	AssertEqual(t, GCD(4, -6), 2)
+	AssertEqual(t, GCD(-4, -6), 2)
+	AssertEqual(t, GCD(-12, 8), 4)
 }
 
 func TestLCM(t *testing.T) {
@@ -103,6 +107,9 @@ func TestLCM(t *testing.T) {
 	AssertEqual(t, LCM(7, 3), 21)
 	AssertEqual(t, LCM(0, 5), 0)
 	AssertEqual(t, LCM(6, 6), 6)
+	// 负数输入返回非负结果
+	AssertEqual(t, LCM(-4, 6), 12)
+	AssertEqual(t, LCM(4, -6), 12)
 }
 
 func TestFibonacci(t *testing.T) {

@@ -57,6 +57,13 @@ func TestSplit(t *testing.T) {
 	gtest.AssertEqual(t, len(res), 2)
 }
 
+// TestSplitNoAliasing 验证对某个分片 append 不会串扰到下一个分片
+func TestSplitNoAliasing(t *testing.T) {
+	res := Split([]int{1, 2, 3, 4, 5, 6}, 3)
+	res[0] = append(res[0], 999)
+	gtest.AssertSliceEqual(t, res[1], []int{4, 5, 6})
+}
+
 func TestReverse(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5}
 	Reverse(arr)

@@ -63,6 +63,33 @@ func TestMultiError(t *testing.T) {
 	gtest.AssertTrue(t, gtest.ContainsStr(m.Error(), "err2"))
 }
 
+func TestMultiErrorUnwrap(t *testing.T) {
+	sentinel := New("sentinel")
+	m := &MultiError{}
+	m.Append(New("other"))
+	m.Append(Wrap(sentinel, "context"))
+	// errors.Is 应能穿透 MultiError 找到 sentinel
+	gtest.AssertTrue(t, Is(m, sentinel))
+
+	var terr *parseError
+	m2 := &MultiError{}
+	m2.Append(New("plain"))
+	m2.Append(&parseError{msg: "boom"})
+	gtest.AssertTrue(t, As(m2, &terr))
+	gtest.AssertTrue(t, terr != nil)
+}
+
+func TestMultiErrorOrNil(t *testing.T) {
+	var m *MultiError
+	gtest.AssertTrue(t, m.ErrorOrNil() == nil)
+
+	empty := &MultiError{}
+	gtest.AssertTrue(t, empty.ErrorOrNil() == nil)
+
+	empty.Append(New("boom"))
+	gtest.AssertTrue(t, empty.ErrorOrNil() != nil)
+}
+
 func TestPanicToError(t *testing.T) {
 	err := PanicToError(func() {
 		panic("something went wrong")
