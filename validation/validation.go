@@ -171,16 +171,17 @@ func IsEmailAddr(s string) bool {
 	return err == nil
 }
 
+var privateBlocks = []*net.IPNet{
+	mustCIDR("10.0.0.0/8"),
+	mustCIDR("172.16.0.0/12"),
+	mustCIDR("192.168.0.0/16"),
+	mustCIDR("127.0.0.0/8"),
+}
+
 func IsPrivateIP(s string) bool {
 	ip := net.ParseIP(s)
 	if ip == nil {
 		return false
-	}
-	privateBlocks := []*net.IPNet{
-		mustCIDR("10.0.0.0/8"),
-		mustCIDR("172.16.0.0/12"),
-		mustCIDR("192.168.0.0/16"),
-		mustCIDR("127.0.0.0/8"),
 	}
 	for _, cidr := range privateBlocks {
 		if cidr.Contains(ip) {

@@ -79,13 +79,20 @@ func New(opts ...Option) *Logger {
 var defaultLogger atomic.Pointer[Logger]
 var once sync.Once
 
+// Default 返回全局默认 Logger。若已通过 SetDefault 设置过则直接返回该实例，
+// 否则惰性创建一个默认 Logger。调用顺序无关：先 SetDefault 再 Default 不会被覆盖。
 func Default() *Logger {
+	if l := defaultLogger.Load(); l != nil {
+		return l
+	}
 	once.Do(func() {
-		defaultLogger.Store(New())
+		defaultLogger.CompareAndSwap(nil, New())
 	})
 	return defaultLogger.Load()
 }
 
+// SetDefault 设置全局默认 Logger。可在首次使用包级日志函数（如 logs.Info）之前调用，
+// 设置的实例不会被 Default 的惰性初始化覆盖。
 func SetDefault(l *Logger) {
 	defaultLogger.Store(l)
 }

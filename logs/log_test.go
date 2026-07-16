@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -84,4 +85,29 @@ func TestLoggerOptions(t *testing.T) {
 		WithFormatter(&JSONFormatter{}),
 	)
 	AssertTrue(t, l != nil)
+}
+
+// TestSetDefaultBeforeDefault 保证在首次 Default() 之前调用 SetDefault
+// 不会被惰性初始化覆盖。
+func TestSetDefaultBeforeDefault(t *testing.T) {
+	resetDefaultState()
+
+	custom := New(WithLevel(DEBUG))
+	SetDefault(custom)
+	AssertTrue(t, Default() == custom)
+}
+
+// TestDefaultLazyInit 在未设置时 Default() 惰性创建非 nil logger。
+func TestDefaultLazyInit(t *testing.T) {
+	resetDefaultState()
+
+	l := Default()
+	AssertNotNil(t, l)
+	// 再次调用返回同一实例
+	AssertTrue(t, Default() == l)
+}
+
+func resetDefaultState() {
+	once = sync.Once{}
+	defaultLogger.Store(nil)
 }

@@ -48,15 +48,16 @@ func Sum[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | 
 	return sum
 }
 
+// Average 返回算术平均值。累加过程在 float64 中进行，避免窄整型在求和时先行溢出。
 func Average[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64](nums ...T) float64 {
 	if len(nums) == 0 {
 		return 0
 	}
-	var sum T
+	var sum float64
 	for _, n := range nums {
-		sum += n
+		sum += float64(n)
 	}
-	return float64(sum) / float64(len(nums))
+	return sum / float64(len(nums))
 }
 
 func Pow(base, exp int) int {
@@ -172,6 +173,7 @@ func Factorial(n int) int {
 	return result
 }
 
+// Median 返回中位数。偶数个元素时取中间两值的平均，先各自转 float64 再相加，避免整型溢出。
 func Median[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64](nums ...T) float64 {
 	n := len(nums)
 	if n == 0 {
@@ -181,7 +183,7 @@ func Median[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16
 	copy(sorted, nums)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
 	if n%2 == 0 {
-		return float64(sorted[n/2-1]+sorted[n/2]) / 2
+		return (float64(sorted[n/2-1]) + float64(sorted[n/2])) / 2
 	}
 	return float64(sorted[n/2])
 }

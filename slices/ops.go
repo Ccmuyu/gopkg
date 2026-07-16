@@ -201,6 +201,10 @@ func Union[T comparable](slices ...[]T) []T {
 }
 
 func Difference[T comparable](a, b []T) (inANotB, inBNotA []T) {
+	setA := make(map[T]struct{}, len(a))
+	for _, v := range a {
+		setA[v] = struct{}{}
+	}
 	setB := make(map[T]struct{}, len(b))
 	for _, v := range b {
 		setB[v] = struct{}{}
@@ -210,10 +214,6 @@ func Difference[T comparable](a, b []T) (inANotB, inBNotA []T) {
 		if _, ok := setB[v]; !ok {
 			inANotB = append(inANotB, v)
 		}
-	}
-	setA := make(map[T]struct{}, len(a))
-	for _, v := range a {
-		setA[v] = struct{}{}
 	}
 	inBNotA = make([]T, 0)
 	for _, v := range b {

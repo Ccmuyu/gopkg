@@ -65,7 +65,7 @@ func HumanReadable(bytes int64) string {
 		return "-" + HumanReadable(-bytes)
 	}
 	if bytes < unit {
-		return intToStr(bytes) + " B"
+		return strconv.FormatInt(bytes, 10) + " B"
 	}
 	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
@@ -76,28 +76,6 @@ func HumanReadable(bytes int64) string {
 }
 
 var units = []string{"K", "M", "G", "T", "P", "E"}
-
-func intToStr(n int64) string {
-	if n == math.MinInt64 {
-		return "-9223372036854775808"
-	}
-	if n == 0 {
-		return "0"
-	}
-	var result []byte
-	negative := n < 0
-	if negative {
-		n = -n
-	}
-	for n > 0 {
-		result = append([]byte{byte('0' + n%10)}, result...)
-		n /= 10
-	}
-	if negative {
-		result = append([]byte{'-'}, result...)
-	}
-	return string(result)
-}
 
 func floatToStr(f float64) string {
 	s := strconv.FormatFloat(f, 'f', 2, 64)

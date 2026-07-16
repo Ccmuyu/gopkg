@@ -10,18 +10,19 @@ func IsValid(s string) bool {
 	return net.ParseIP(s) != nil
 }
 
+var privateBlocks = []*net.IPNet{
+	mustCIDR("10.0.0.0/8"),
+	mustCIDR("172.16.0.0/12"),
+	mustCIDR("192.168.0.0/16"),
+	mustCIDR("127.0.0.0/8"),
+	mustCIDR("fc00::/7"),
+	mustCIDR("::1/128"),
+}
+
 func IsPrivate(s string) bool {
 	ip := net.ParseIP(s)
 	if ip == nil {
 		return false
-	}
-	privateBlocks := []*net.IPNet{
-		mustCIDR("10.0.0.0/8"),
-		mustCIDR("172.16.0.0/12"),
-		mustCIDR("192.168.0.0/16"),
-		mustCIDR("127.0.0.0/8"),
-		mustCIDR("fc00::/7"),
-		mustCIDR("::1/128"),
 	}
 	for _, cidr := range privateBlocks {
 		if cidr.Contains(ip) {

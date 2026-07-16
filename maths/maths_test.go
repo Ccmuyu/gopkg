@@ -61,6 +61,8 @@ func TestAverage(t *testing.T) {
 	AssertEqual(t, Average(1, 2), 1.5)
 	AssertEqual(t, Average[int](), 0.0)
 	AssertEqual(t, Average(1.0, 2.0, 3.0), 2.0)
+	// 累加过程使用 float64，避免在窄整型内先溢出（int32 max = 2147483647）
+	AssertEqual(t, Average(int32(2000000000), int32(2000000000)), 2000000000.0)
 }
 
 func TestPow(t *testing.T) {
@@ -164,4 +166,7 @@ func TestMedian(t *testing.T) {
 	AssertEqual(t, Median(1, 2, 3, 4), 2.5)
 	AssertEqual(t, Median(1.5, 2.5, 3.5), 2.5)
 	AssertEqual(t, Median[int](), 0.0)
+	// 偶数个中位数先转 float64 再相加，避免在窄整型内溢出（int32 max = 2147483647）
+	AssertEqual(t, Median(int32(2000000000), int32(2000000000)), 2000000000.0)
+	AssertEqual(t, Median(int32(2000000000), int32(2100000000)), 2050000000.0)
 }

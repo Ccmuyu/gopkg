@@ -67,7 +67,11 @@ func Merge[K comparable, V any](maps ...map[K]V) map[K]V {
 }
 
 func MergeWith[K comparable, V any](mergeFn func(V, V) V, maps ...map[K]V) map[K]V {
-	result := make(map[K]V)
+	total := 0
+	for _, m := range maps {
+		total += len(m)
+	}
+	result := make(map[K]V, total)
 	for _, m := range maps {
 		for k, v := range m {
 			if existing, ok := result[k]; ok {
