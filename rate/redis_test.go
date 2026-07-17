@@ -14,10 +14,14 @@ import (
 type fakeRedis struct {
 	mu   sync.Mutex
 	data map[string]map[string]int64 // key -> member -> score
+	now  int64
 }
 
 func newFakeRedis() *fakeRedis {
-	return &fakeRedis{data: make(map[string]map[string]int64)}
+	return &fakeRedis{
+		data: make(map[string]map[string]int64),
+		now:  time.Now().Unix(),
+	}
 }
 
 func (f *fakeRedis) Eval(script string, keys []string, args ...any) (any, error) {
@@ -27,9 +31,9 @@ func (f *fakeRedis) Eval(script string, keys []string, args ...any) (any, error)
 		return nil, fmt.Errorf("want 1 key")
 	}
 	key := keys[0]
-	now := toFakeInt(args[0])
-	window := toFakeInt(args[1])
-	limit := toFakeInt(args[2])
+	now := f.now
+	window := toFakeInt(args[0])
+	limit := toFakeInt(args[1])
 	cutoff := now - window
 
 	z := f.data[key]
@@ -45,17 +49,23 @@ func (f *fakeRedis) Eval(script string, keys []string, args ...any) (any, error)
 
 	isIncr := strings.Contains(script, "ZADD")
 	var current int64
+	denied := false
 	if isIncr {
-		member := fmt.Sprint(args[3])
-		z[member] = now
 		current = int64(len(z))
+		if current < limit {
+			member := fmt.Sprint(args[2])
+			z[member] = now
+			current++
+		} else {
+			denied = true
+		}
 	} else {
 		current = int64(len(z))
 	}
 
 	var limited int64
 	if isIncr {
-		if current > limit {
+		if denied {
 			limited = 1
 		}
 	} else if current >= limit {
@@ -99,7 +109,7 @@ func TestRedisStoreIncrAndPeek(t *testing.T) {
 	fake := newFakeRedis()
 	s := NewRedisStore(fake, "t:").(*redisStore)
 	base := time.Unix(1_700_000_000, 0)
-	s.nowFn = func() time.Time { return base }
+	fake.now = base.Unix()
 
 	for i := 0; i < 3; i++ {
 		r, err := s.Incr("k", 3, 60)
@@ -115,7 +125,14 @@ func TestRedisStoreIncrAndPeek(t *testing.T) {
 	r, err = s.Peek("k", 3, 60)
 	AssertNoError(t, err)
 	AssertTrue(t, r.Limited)
-	AssertEqual(t, r.Current, int64(4))
+	AssertEqual(t, r.Current, int64(3))
+
+	// 拒绝请求没有写入 ZSET，窗口过去后可立即恢复。
+	fake.now += 61
+	r, err = s.Incr("k", 3, 60)
+	AssertNoError(t, err)
+	AssertTrue(t, !r.Limited)
+	AssertEqual(t, r.Current, int64(1))
 }
 
 func TestRedisStorePeekNoConsume(t *testing.T) {
@@ -137,6 +154,36 @@ func TestRedisStorePeekNoConsume(t *testing.T) {
 func TestRedisStoreCleanupNoop(t *testing.T) {
 	s := NewRedisStore(newFakeRedis(), "x:")
 	AssertNoError(t, s.Cleanup())
+}
+
+func TestRedisStoreSameKeyDifferentWindowsAreIsolated(t *testing.T) {
+	fake := newFakeRedis()
+	s := NewRedisStore(fake, "t:").(*redisStore)
+
+	for i := 0; i < 3; i++ {
+		_, _ = s.Incr("k", 3, 60)
+	}
+	short, err := s.Incr("k", 10, 10)
+	AssertNoError(t, err)
+	AssertEqual(t, short.Current, int64(1))
+
+	long, err := s.Peek("k", 3, 60)
+	AssertNoError(t, err)
+	AssertTrue(t, long.Limited)
+	AssertEqual(t, long.Current, int64(3))
+}
+
+func TestRedisStoreInstancesUseDistinctMembers(t *testing.T) {
+	fake := newFakeRedis()
+	a := NewRedisStore(fake, "t:").(*redisStore)
+	b := NewRedisStore(fake, "t:").(*redisStore)
+	AssertTrue(t, a.instanceID != b.instanceID)
+
+	_, err := a.Incr("k", 10, 60)
+	AssertNoError(t, err)
+	r, err := b.Incr("k", 10, 60)
+	AssertNoError(t, err)
+	AssertEqual(t, r.Current, int64(2))
 }
 
 func TestRedisStoreInvalidLimit(t *testing.T) {

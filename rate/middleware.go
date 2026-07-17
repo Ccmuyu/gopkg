@@ -89,8 +89,19 @@ func defaultRouteKey(r *http.Request) string {
 	return r.URL.Path
 }
 
-// DefaultClientIP 从 X-Forwarded-For / X-Real-IP / RemoteAddr 提取客户端 IP
+// DefaultClientIP 仅从直连地址提取客户端 IP。
+// 它不会信任可由客户端伪造的转发头，适合作为安全默认值。
 func DefaultClientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
+}
+
+// ForwardedClientIP 优先从 X-Forwarded-For / X-Real-IP 提取客户端 IP。
+// 仅当服务只能通过会覆盖这些请求头的可信反向代理访问时使用。
+func ForwardedClientIP(r *http.Request) string {
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 		parts := strings.Split(xff, ",")
 		if ip := strings.TrimSpace(parts[0]); ip != "" {
@@ -100,9 +111,5 @@ func DefaultClientIP(r *http.Request) string {
 	if xri := strings.TrimSpace(r.Header.Get("X-Real-IP")); xri != "" {
 		return xri
 	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return host
+	return DefaultClientIP(r)
 }

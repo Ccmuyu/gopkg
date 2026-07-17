@@ -15,7 +15,8 @@ type CountResult struct {
 
 // Store 限流计数存储接口（预留 Redis 扩展点）
 type Store interface {
-	// Incr 对 key 在当前窗口内计数 +1，返回是否超限
+	// Incr 在未达到 limit 时对 key 在当前窗口内计数 +1。
+	// 已达到 limit 时拒绝且不增加计数，避免超限流量延长封禁时间。
 	Incr(key string, limit, window int64) (CountResult, error)
 	// Peek 只读查询当前计数，不增加计数
 	Peek(key string, limit, window int64) (CountResult, error)
@@ -36,11 +37,18 @@ type keyState struct {
 	lastWindow int64 // 最近一次 Incr 使用的 window
 }
 
+// storeKey 将 window 作为规则身份的一部分。同一个业务 key 使用不同窗口时，
+// 必须维护独立状态，否则短窗口检查会不可逆地删除长窗口仍需使用的历史。
+type storeKey struct {
+	key    string
+	window int64
+}
+
 // slidingWindowStore 基于滑动窗口计数器的内存实现。
 // 每次 Incr/Peek 按入参 window 计算槽宽，避免构造时 window 与调用 window 不一致。
 type slidingWindowStore struct {
 	mu      sync.Mutex
-	data    map[string]*keyState
+	data    map[storeKey]*keyState
 	slots   int   // 子槽数量（用于粒度；不因槽满丢弃未过期计数）
 	idleTTL int64 // Cleanup 空闲阈值下限（秒）
 	nowFunc func() time.Time
@@ -61,7 +69,7 @@ func NewSlidingWindowStore(window int64, slots int) Store {
 		idleTTL = 120
 	}
 	return &slidingWindowStore{
-		data:    make(map[string]*keyState),
+		data:    make(map[storeKey]*keyState),
 		slots:   slots,
 		idleTTL: idleTTL,
 		nowFunc: time.Now,
@@ -84,11 +92,13 @@ func remaining(limit, current int64) int64 {
 	return r
 }
 
-func resetAfter(now, window int64, slots []slot, limited bool) int64 {
+func resetAfter(now, window, slotWidth int64, slots []slot, limited bool) int64 {
 	if !limited || len(slots) == 0 {
 		return 0
 	}
-	ra := slots[0].timestamp + window - now
+	// 槽内没有保存单次请求时间，因此按整个最老槽过期计算。
+	// 这会略偏保守，但不会返回一个过早、等待后仍被限流的时间。
+	ra := slots[0].timestamp + slotWidth + window - now
 	if ra < 1 {
 		return 1
 	}
@@ -96,11 +106,13 @@ func resetAfter(now, window int64, slots []slot, limited bool) int64 {
 }
 
 // collectValid 收集仍在窗口内的槽并求和（不修改原数据）
-func collectValid(slots []slot, windowStart int64) ([]slot, int64) {
+func collectValid(slots []slot, windowStart, slotWidth int64) ([]slot, int64) {
 	valid := make([]slot, 0, len(slots)+1)
 	var current int64
 	for _, sl := range slots {
-		if sl.timestamp >= windowStart {
+		// 只要槽尾仍与窗口相交，就保守地保留整个槽。按槽起点判断会
+		// 提前丢弃槽后半段仍在窗口内的请求，造成限流漏放。
+		if sl.timestamp+slotWidth > windowStart {
 			valid = append(valid, sl)
 			current += sl.count
 		}
@@ -122,13 +134,28 @@ func (s *slidingWindowStore) Incr(key string, limit, window int64) (CountResult,
 	currentSlotTs := (now / sw) * sw
 	windowStart := now - window
 
-	ks := s.data[key]
+	sk := storeKey{key: key, window: window}
+	ks := s.data[sk]
 	if ks == nil {
 		ks = &keyState{}
-		s.data[key] = ks
+		s.data[sk] = ks
 	}
 
-	validSlots, current := collectValid(ks.slots, windowStart)
+	validSlots, current := collectValid(ks.slots, windowStart, sw)
+	ks.slots = validSlots
+	ks.lastAccess = now
+	ks.lastWindow = window
+
+	// 拒绝的请求不进入窗口。否则持续的超限流量会不断抬高 current，
+	// 即使按 ResetAfter 等待后也仍然无法恢复。
+	if current >= limit {
+		return CountResult{
+			Current:    current,
+			Limited:    true,
+			ResetAfter: resetAfter(now, window, sw, validSlots, true),
+			Remaining:  0,
+		}, nil
+	}
 
 	found := false
 	for i, sl := range validSlots {
@@ -145,14 +172,11 @@ func (s *slidingWindowStore) Incr(key string, limit, window int64) (CountResult,
 	}
 
 	ks.slots = validSlots
-	ks.lastAccess = now
-	ks.lastWindow = window
 
-	limited := current > limit
 	return CountResult{
 		Current:    current,
-		Limited:    limited,
-		ResetAfter: resetAfter(now, window, validSlots, limited),
+		Limited:    false,
+		ResetAfter: 0,
 		Remaining:  remaining(limit, current),
 	}, nil
 }
@@ -168,18 +192,19 @@ func (s *slidingWindowStore) Peek(key string, limit, window int64) (CountResult,
 
 	now := s.nowFunc().Unix()
 	windowStart := now - window
+	sw := s.slotWidth(window)
 
 	var slots []slot
-	if ks := s.data[key]; ks != nil {
+	if ks := s.data[storeKey{key: key, window: window}]; ks != nil {
 		slots = ks.slots
 	}
-	validSlots, current := collectValid(slots, windowStart)
+	validSlots, current := collectValid(slots, windowStart, sw)
 	limited := current >= limit
 
 	return CountResult{
 		Current:    current,
 		Limited:    limited,
-		ResetAfter: resetAfter(now, window, validSlots, limited),
+		ResetAfter: resetAfter(now, window, sw, validSlots, limited),
 		Remaining:  remaining(limit, current),
 	}, nil
 }

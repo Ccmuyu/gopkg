@@ -1,9 +1,10 @@
 package rate
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"sync/atomic"
-	"time"
 )
 
 // RedisEvaler 执行 Redis EVAL。可用 go-redis 等适配，例如：
@@ -19,18 +20,23 @@ type RedisEvaler interface {
 // redis 滑动窗口（ZSET）：按 score=unix 秒排序，窗口外成员用 ZREMRANGEBYSCORE 剔除。
 const redisIncrScript = `
 local key = KEYS[1]
-local now = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
-local limit = tonumber(ARGV[3])
-local member = ARGV[4]
+local redisTime = redis.call('TIME')
+local now = tonumber(redisTime[1])
+local window = tonumber(ARGV[1])
+local limit = tonumber(ARGV[2])
+local member = ARGV[3]
 
 redis.call('ZREMRANGEBYSCORE', key, '-inf', now - window)
-local current = redis.call('ZCARD', key) + 1
-redis.call('ZADD', key, now, member)
-redis.call('EXPIRE', key, window)
+local current = redis.call('ZCARD', key)
 
 local limited = 0
-if current > limit then limited = 1 end
+if current >= limit then
+  limited = 1
+else
+  redis.call('ZADD', key, now, member)
+  current = current + 1
+end
+redis.call('EXPIRE', key, window)
 
 local remaining = limit - current
 if remaining < 0 then remaining = 0 end
@@ -51,9 +57,10 @@ return {current, limited, resetAfter, remaining}
 
 const redisPeekScript = `
 local key = KEYS[1]
-local now = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
-local limit = tonumber(ARGV[3])
+local redisTime = redis.call('TIME')
+local now = tonumber(redisTime[1])
+local window = tonumber(ARGV[1])
+local limit = tonumber(ARGV[2])
 
 redis.call('ZREMRANGEBYSCORE', key, '-inf', now - window)
 local current = redis.call('ZCARD', key)
@@ -79,10 +86,10 @@ return {current, limited, resetAfter, remaining}
 `
 
 type redisStore struct {
-	eval   RedisEvaler
-	prefix string
-	seq    uint64
-	nowFn  func() time.Time
+	eval       RedisEvaler
+	prefix     string
+	instanceID string
+	seq        uint64
 }
 
 // NewRedisStore 创建基于 Redis 的滑动窗口 Store。
@@ -96,23 +103,30 @@ func NewRedisStore(evaler RedisEvaler, keyPrefix string) Store {
 		keyPrefix = "rate:"
 	}
 	return &redisStore{
-		eval:   evaler,
-		prefix: keyPrefix,
-		nowFn:  time.Now,
+		eval:       evaler,
+		prefix:     keyPrefix,
+		instanceID: newRedisInstanceID(),
 	}
 }
 
-func (s *redisStore) fullKey(key string) string {
-	return s.prefix + key
+func newRedisInstanceID() string {
+	var id [12]byte
+	if _, err := rand.Read(id[:]); err != nil {
+		panic(fmt.Sprintf("rate: generate redis instance id: %v", err))
+	}
+	return hex.EncodeToString(id[:])
+}
+
+func (s *redisStore) fullKey(key string, window int64) string {
+	return fmt.Sprintf("%s%s:w:%d", s.prefix, key, window)
 }
 
 func (s *redisStore) Incr(key string, limit, window int64) (CountResult, error) {
 	if limit <= 0 || window <= 0 {
 		return CountResult{Limited: true}, nil
 	}
-	now := s.nowFn().Unix()
-	member := fmt.Sprintf("%d-%d", now, atomic.AddUint64(&s.seq, 1))
-	raw, err := s.eval.Eval(redisIncrScript, []string{s.fullKey(key)}, now, window, limit, member)
+	member := fmt.Sprintf("%s-%d", s.instanceID, atomic.AddUint64(&s.seq, 1))
+	raw, err := s.eval.Eval(redisIncrScript, []string{s.fullKey(key, window)}, window, limit, member)
 	if err != nil {
 		return CountResult{}, err
 	}
@@ -123,8 +137,7 @@ func (s *redisStore) Peek(key string, limit, window int64) (CountResult, error) 
 	if limit <= 0 || window <= 0 {
 		return CountResult{Limited: true}, nil
 	}
-	now := s.nowFn().Unix()
-	raw, err := s.eval.Eval(redisPeekScript, []string{s.fullKey(key)}, now, window, limit)
+	raw, err := s.eval.Eval(redisPeekScript, []string{s.fullKey(key, window)}, window, limit)
 	if err != nil {
 		return CountResult{}, err
 	}

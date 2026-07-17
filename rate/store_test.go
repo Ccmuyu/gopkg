@@ -165,7 +165,71 @@ func TestSlidingWindowNoPrematureDrop(t *testing.T) {
 	r, err := s.Incr("k", 10, 100)
 	AssertNoError(t, err)
 	AssertTrue(t, r.Limited)
-	AssertEqual(t, r.Current, int64(11))
+	AssertEqual(t, r.Current, int64(10))
+}
+
+func TestSlidingWindowKeepsPartiallyOverlappingSlot(t *testing.T) {
+	base := time.Unix(1_000_000, 0)
+	offset := int64(4)
+	s := NewSlidingWindowStore(10, 2).(*slidingWindowStore) // 每槽 5 秒
+	s.nowFunc = func() time.Time {
+		return base.Add(time.Duration(offset) * time.Second)
+	}
+
+	// 请求发生在槽 [0,5) 的末尾。
+	_, _ = s.Incr("k", 10, 10)
+	offset = 11 // 窗口起点为 1，请求仍在最近 10 秒内
+
+	r, err := s.Peek("k", 10, 10)
+	AssertNoError(t, err)
+	AssertEqual(t, r.Current, int64(1))
+}
+
+func TestSlidingWindowRejectedRequestsDoNotConsumeQuota(t *testing.T) {
+	base := time.Unix(1_000_000, 0)
+	offset := int64(0)
+	s := NewSlidingWindowStore(10, 5).(*slidingWindowStore)
+	s.nowFunc = func() time.Time {
+		return base.Add(time.Duration(offset) * time.Second)
+	}
+
+	for i := 0; i < 3; i++ {
+		r, err := s.Incr("k", 3, 10)
+		AssertNoError(t, err)
+		AssertTrue(t, !r.Limited)
+	}
+	for i := 0; i < 100; i++ {
+		r, err := s.Incr("k", 3, 10)
+		AssertNoError(t, err)
+		AssertTrue(t, r.Limited)
+		AssertEqual(t, r.Current, int64(3))
+	}
+
+	// 最早一批所在的聚合槽过期后应立即恢复，不受此前 100 次拒绝影响。
+	offset = 12
+	r, err := s.Incr("k", 3, 10)
+	AssertNoError(t, err)
+	AssertTrue(t, !r.Limited)
+	AssertEqual(t, r.Current, int64(1))
+}
+
+func TestSlidingWindowSameKeyDifferentWindowsAreIsolated(t *testing.T) {
+	base := time.Unix(1_000_000, 0)
+	s := NewSlidingWindowStore(60, 10).(*slidingWindowStore)
+	s.nowFunc = func() time.Time { return base }
+
+	for i := 0; i < 3; i++ {
+		_, _ = s.Incr("k", 3, 60)
+	}
+
+	short, err := s.Incr("k", 10, 10)
+	AssertNoError(t, err)
+	AssertEqual(t, short.Current, int64(1))
+
+	long, err := s.Peek("k", 3, 60)
+	AssertNoError(t, err)
+	AssertTrue(t, long.Limited)
+	AssertEqual(t, long.Current, int64(3))
 }
 
 func TestSlidingWindowDifferentWindows(t *testing.T) {

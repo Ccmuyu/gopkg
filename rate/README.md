@@ -91,12 +91,20 @@ mux := http.NewServeMux()
 mux.HandleFunc("/api/sync", handleSync)
 
 h := l.Middleware(
-    rate.WithClientIP(rate.DefaultClientIP), // 默认已启用
+    rate.WithClientIP(rate.DefaultClientIP), // 默认已启用，仅信任 RemoteAddr
 )(mux)
 http.ListenAndServe(":8080", h)
 ```
 
 被限流时默认返回 **429**，并设置 `Retry-After`、`X-RateLimit-Level`。
+
+服务位于可信反向代理之后，且代理会覆盖客户端传入的转发头时，可显式启用：
+
+```go
+h := l.Middleware(
+    rate.WithClientIP(rate.ForwardedClientIP),
+)(mux)
+```
 
 ### Redis Store（无第三方依赖）
 
@@ -117,6 +125,8 @@ l := rate.NewLimiter(cfg, store)
 
 - `Check` 按 **全局 → IP → 路由** 依次检查；每一级在检查时就会 `Incr`。
 - 若后续级别拒绝，**已消耗的上级配额不会回滚**（被拒请求仍计入上级计数）。
+- 已达到某一级限额后，该级后续被拒请求**不会继续增加计数**，窗口到期后可正常恢复。
+- 相同业务 key 的不同 `window` 使用独立计数状态，切换窗口不会删除另一窗口的历史。
 - 需要「先看后扣」时用 `Peek` / `PeekN` / `Remaining`（不消耗配额）。
 - `NewLimiter` 会 **Clone 配置快照**；`Config()` / `GetRouteRule` 返回副本，修改不影响内部状态。
 - Store 出错时默认 **FailClosed**（拒绝）；可用 `WithFailOpen` 改为放行。
@@ -165,10 +175,12 @@ func WithClientIP(fn func(*http.Request) string) MiddlewareOption
 func WithRouteKey(fn func(*http.Request) string) MiddlewareOption
 func WithOnLimited(fn func(http.ResponseWriter, *http.Request, CheckResult)) MiddlewareOption
 func WithStatusCode(code int) MiddlewareOption
-func DefaultClientIP(r *http.Request) string
+func DefaultClientIP(r *http.Request) string   // 仅 RemoteAddr，安全默认值
+func ForwardedClientIP(r *http.Request) string // 信任 X-Forwarded-For / X-Real-IP
 
 // 存储接口
 type Store interface {
+    // 仅在当前计数低于 limit 时增加；达到限额后拒绝且不计数。
     Incr(key string, limit, window int64) (CountResult, error)
     Peek(key string, limit, window int64) (CountResult, error)
     Cleanup() error

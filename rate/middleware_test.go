@@ -78,15 +78,22 @@ func TestMiddlewareCustomOnLimited(t *testing.T) {
 func TestDefaultClientIP(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("X-Forwarded-For", "1.2.3.4, 5.6.7.8")
-	AssertEqual(t, DefaultClientIP(req), "1.2.3.4")
+	req.RemoteAddr = "8.8.8.8:9999"
+	AssertEqual(t, DefaultClientIP(req), "8.8.8.8")
+}
+
+func TestForwardedClientIP(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("X-Forwarded-For", "1.2.3.4, 5.6.7.8")
+	AssertEqual(t, ForwardedClientIP(req), "1.2.3.4")
 
 	req = httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("X-Real-IP", "9.9.9.9")
-	AssertEqual(t, DefaultClientIP(req), "9.9.9.9")
+	AssertEqual(t, ForwardedClientIP(req), "9.9.9.9")
 
 	req = httptest.NewRequest(http.MethodGet, "/", nil)
 	req.RemoteAddr = "8.8.8.8:9999"
-	AssertEqual(t, DefaultClientIP(req), "8.8.8.8")
+	AssertEqual(t, ForwardedClientIP(req), "8.8.8.8")
 }
 
 func TestMiddlewareCustomIPAndRoute(t *testing.T) {
