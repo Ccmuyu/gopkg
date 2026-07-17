@@ -1,6 +1,7 @@
 package retry
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -80,4 +81,29 @@ func TestRetryDefaultValues(t *testing.T) {
 	}, WithDelay(time.Millisecond))
 	AssertError(t, err)
 	AssertEqual(t, attempts, 3)
+}
+
+func TestRetryNonPositiveAttemptsRunsOnce(t *testing.T) {
+	for _, attempts := range []int{0, -1} {
+		calls := 0
+		err := Retry(func() error {
+			calls++
+			return errors.New("fail")
+		}, WithMaxAttempts(attempts))
+		AssertError(t, err)
+		AssertEqual(t, calls, 1)
+	}
+}
+
+func TestRetryCtxDoesNotRunAfterCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	calls := 0
+
+	err := RetryCtx(ctx, func() error {
+		calls++
+		return nil
+	})
+	AssertTrue(t, errors.Is(err, context.Canceled))
+	AssertEqual(t, calls, 0)
 }

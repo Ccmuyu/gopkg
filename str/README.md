@@ -17,7 +17,7 @@ str.Lower("HELLO")                         // "hello"
 str.Split("a,b,c", ",")                    // ["a", "b", "c"]
 str.Join([]string{"a", "b", "c"}, ",")     // "a,b,c"
 str.Contains("hello world", "world")       // true
-str.Ellipsis("hello world", 8)             // "hello..."
+str.Ellipsis("hello world", 8)             // "hello wo..."
 
 str.After("user@example.com", "@")         // "example.com"
 str.Before("user@example.com", "@")        // "user"
@@ -66,3 +66,6 @@ func ToSnake(s string) string
 func ToKebab(s string) string
 func Mask(s string, unmaskLen int, mask rune) string
 ```
+
+`Ellipsis` 的 `maxLen` 表示保留的字符数，不包含追加的 `...`；负数按 0 处理。
+`Mask` 的负数 `unmaskLen` 同样按 0 处理。

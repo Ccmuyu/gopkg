@@ -46,7 +46,7 @@ func TestAbsInt8(t *testing.T) {
 
 func TestAbsInt8Min(t *testing.T) {
 	var x int8 = -128
-	AssertEqual(t, Abs(x), int8(-128))
+	AssertEqual(t, Abs(x), int8(127))
 }
 
 func TestSum(t *testing.T) {
@@ -90,6 +90,14 @@ func TestIsPrime(t *testing.T) {
 	AssertTrue(t, IsPrime(97))
 }
 
+func TestIsPrimeNearMaxInt(t *testing.T) {
+	n := int(^uint(0) >> 1)
+	if uint64(n) > 1<<32 {
+		n -= 24 // 9223372036854775783，64 位有符号整数范围内的质数
+	}
+	AssertTrue(t, IsPrime(n))
+}
+
 func TestGCD(t *testing.T) {
 	AssertEqual(t, GCD(12, 8), 4)
 	AssertEqual(t, GCD(7, 3), 1)
@@ -100,6 +108,8 @@ func TestGCD(t *testing.T) {
 	AssertEqual(t, GCD(4, -6), 2)
 	AssertEqual(t, GCD(-4, -6), 2)
 	AssertEqual(t, GCD(-12, 8), 4)
+	minInt := -int(^uint(0)>>1) - 1
+	AssertEqual(t, GCD(minInt, 0), int(^uint(0)>>1))
 }
 
 func TestLCM(t *testing.T) {
@@ -110,6 +120,8 @@ func TestLCM(t *testing.T) {
 	// 负数输入返回非负结果
 	AssertEqual(t, LCM(-4, 6), 12)
 	AssertEqual(t, LCM(4, -6), 12)
+	maxInt := int(^uint(0) >> 1)
+	AssertEqual(t, LCM(maxInt, 2), maxInt)
 }
 
 func TestFibonacci(t *testing.T) {

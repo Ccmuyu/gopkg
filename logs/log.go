@@ -38,9 +38,9 @@ func (l Level) String() string {
 }
 
 type Logger struct {
-	mu      sync.Mutex
-	level   Level
-	output  io.Writer
+	mu        sync.Mutex
+	level     Level
+	output    io.Writer
 	formatter Formatter
 }
 
@@ -66,8 +66,8 @@ func WithFormatter(f Formatter) Option {
 
 func New(opts ...Option) *Logger {
 	l := &Logger{
-		level:   INFO,
-		output:  os.Stdout,
+		level:     INFO,
+		output:    os.Stdout,
 		formatter: &DefaultFormatter{},
 	}
 	for _, opt := range opts {
@@ -94,6 +94,9 @@ func Default() *Logger {
 // SetDefault 设置全局默认 Logger。可在首次使用包级日志函数（如 logs.Info）之前调用，
 // 设置的实例不会被 Default 的惰性初始化覆盖。
 func SetDefault(l *Logger) {
+	if l == nil {
+		return
+	}
 	defaultLogger.Store(l)
 }
 
@@ -101,8 +104,6 @@ func (l *Logger) log(ctx context.Context, level Level, format string, args ...an
 	if level < l.level {
 		return
 	}
-	l.mu.Lock()
-	defer l.mu.Unlock()
 	msg := fmt.Sprintf(format, args...)
 	entry := &Entry{
 		Time:  time.Now(),
@@ -110,7 +111,10 @@ func (l *Logger) log(ctx context.Context, level Level, format string, args ...an
 		Msg:   msg,
 		Ctx:   ctx,
 	}
-	l.output.Write([]byte(l.formatter.Format(entry)))
+	formatted := l.formatter.Format(entry)
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	_, _ = l.output.Write([]byte(formatted))
 }
 
 func (l *Logger) Debug(ctx context.Context, format string, args ...any) {

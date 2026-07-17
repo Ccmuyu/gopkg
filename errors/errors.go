@@ -44,12 +44,18 @@ type MultiError struct {
 }
 
 func (m *MultiError) Error() string {
-	if len(m.Errors) == 0 {
+	if m == nil {
 		return ""
 	}
-	msg := m.Errors[0].Error()
-	for _, err := range m.Errors[1:] {
-		msg += "; " + err.Error()
+	msg := ""
+	for _, err := range m.Errors {
+		if err == nil {
+			continue
+		}
+		if msg != "" {
+			msg += "; "
+		}
+		msg += err.Error()
 	}
 	return msg
 }
@@ -61,18 +67,35 @@ func (m *MultiError) Append(err error) {
 }
 
 func (m *MultiError) HasError() bool {
-	return len(m.Errors) > 0
+	if m == nil {
+		return false
+	}
+	for _, err := range m.Errors {
+		if err != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // Unwrap 返回内部错误列表，使 errors.Is / errors.As 能够遍历（Go 1.20+）。
 func (m *MultiError) Unwrap() []error {
-	return m.Errors
+	if m == nil {
+		return nil
+	}
+	errs := make([]error, 0, len(m.Errors))
+	for _, err := range m.Errors {
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
 }
 
 // ErrorOrNil 在无错误时返回 nil，避免「非 nil 接口包裹空 *MultiError」的陷阱。
 // 建议以此作为函数返回值：return m.ErrorOrNil()。
 func (m *MultiError) ErrorOrNil() error {
-	if m == nil || len(m.Errors) == 0 {
+	if !m.HasError() {
 		return nil
 	}
 	return m

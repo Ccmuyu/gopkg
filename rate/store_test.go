@@ -102,6 +102,22 @@ func TestSlidingWindowCleanupUsesLastWindow(t *testing.T) {
 	AssertEqual(t, s.lenKeys(), 0)
 }
 
+func TestSlidingWindowAmortizedCleanup(t *testing.T) {
+	base := time.Unix(1_000_000, 0)
+	offset := int64(0)
+	s := NewSlidingWindowStore(10, 5).(*slidingWindowStore)
+	s.nowFunc = func() time.Time {
+		return base.Add(time.Duration(offset) * time.Second)
+	}
+
+	_, _ = s.Incr("old", 10, 10)
+	AssertEqual(t, s.lenKeys(), 1)
+
+	offset = 200
+	_, _ = s.Incr("new", 10, 10)
+	AssertEqual(t, s.lenKeys(), 1)
+}
+
 func TestSlidingWindowMultipleKeys(t *testing.T) {
 	s := NewSlidingWindowStore(10, 5)
 

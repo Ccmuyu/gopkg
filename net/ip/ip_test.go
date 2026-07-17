@@ -16,6 +16,12 @@ func TestIsPrivate(t *testing.T) {
 	AssertTrue(t, IsPrivate("192.168.1.1"))
 	AssertTrue(t, IsPrivate("10.0.0.1"))
 	AssertTrue(t, IsPrivate("127.0.0.1"))
+	AssertTrue(t, IsPrivate("169.254.169.254"))
+	AssertTrue(t, IsPrivate("fe80::1"))
+	AssertTrue(t, IsPrivate("fc00::1"))
+	AssertTrue(t, IsPrivate("::1"))
+	AssertTrue(t, IsPrivate("0.0.0.0"))
+	AssertTrue(t, IsPrivate("::ffff:169.254.169.254"))
 	AssertTrue(t, !IsPrivate("8.8.8.8"))
 }
 
@@ -37,6 +43,8 @@ func TestToIntIPv6(t *testing.T) {
 
 func TestIntToIP(t *testing.T) {
 	AssertEqual(t, IntToIP(3232235777), "192.168.1.1")
+	AssertEqual(t, IntToIP(-1), "")
+	AssertEqual(t, IntToIP(1<<32), "")
 }
 
 func TestToJSON(t *testing.T) {

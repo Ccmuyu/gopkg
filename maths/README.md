@@ -29,6 +29,8 @@ maths.Factorial(5)                  // 120
 maths.Median(1, 2, 3, 4, 5)        // 3.0
 ```
 
+`Abs`、`GCD` 和 `LCM` 在数学结果超出返回类型可表示范围时采用最大值饱和语义。
+
 ## API 参考
 
 ```go

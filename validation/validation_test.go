@@ -65,6 +65,10 @@ func TestIsPrivateIP(t *testing.T) {
 	AssertTrue(t, IsPrivateIP("192.168.1.1"))
 	AssertTrue(t, IsPrivateIP("10.0.0.1"))
 	AssertTrue(t, IsPrivateIP("127.0.0.1"))
+	AssertTrue(t, IsPrivateIP("169.254.169.254"))
+	AssertTrue(t, IsPrivateIP("fe80::1"))
+	AssertTrue(t, IsPrivateIP("fc00::1"))
+	AssertTrue(t, IsPrivateIP("::1"))
 	AssertTrue(t, !IsPrivateIP("8.8.8.8"))
 }
 

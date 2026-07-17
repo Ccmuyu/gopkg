@@ -7,6 +7,7 @@ package dag
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -180,7 +181,8 @@ func (d *DAG) Run(ctx context.Context, opts ...Option) (Results, error) {
 		o(cfg)
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
+	parentCtx := ctx
+	ctx, cancel := context.WithCancel(parentCtx)
 	defer cancel()
 
 	var sem chan struct{}
@@ -269,6 +271,9 @@ func (d *DAG) Run(ctx context.Context, opts ...Option) (Results, error) {
 	}
 
 	wg.Wait()
+	if err := parentCtx.Err(); err != nil && !errors.Is(merr.ErrorOrNil(), err) {
+		merr.Append(fmt.Errorf("dag: run canceled: %w", err))
+	}
 	return results, merr.ErrorOrNil()
 }
 

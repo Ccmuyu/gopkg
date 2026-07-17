@@ -7,8 +7,8 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
-	"encoding/hex"
 	"encoding/base64"
+	"encoding/hex"
 	"hash"
 	"hash/crc32"
 )
@@ -67,7 +67,12 @@ func CRC32String(s string) uint32 {
 	return crc32.ChecksumIEEE([]byte(s))
 }
 
+// RandomToken 返回由 n 个加密安全随机字节编码的 URL-safe Base64 字符串。
+// n <= 0 或系统随机源失败时返回空字符串。
 func RandomToken(n int) string {
+	if n <= 0 {
+		return ""
+	}
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
 		return ""

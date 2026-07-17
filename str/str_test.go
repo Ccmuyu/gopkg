@@ -54,6 +54,7 @@ func TestEllipsis(t *testing.T) {
 	AssertEqual(t, Ellipsis("hello world", 5), "hello...")
 	AssertEqual(t, Ellipsis("hi", 5), "hi")
 	AssertEqual(t, Ellipsis("你好世界", 2), "你好...")
+	AssertEqual(t, Ellipsis("hello", -1), "...")
 }
 
 func TestIsEmpty(t *testing.T) {
@@ -150,4 +151,5 @@ func TestMask(t *testing.T) {
 	AssertEqual(t, Mask("123", 3, '*'), "123")
 	AssertEqual(t, Mask("12345", 10, '*'), "12345")
 	AssertEqual(t, Mask("hello世界", 2, '*'), "he*****")
+	AssertEqual(t, Mask("123", -1, '*'), "***")
 }

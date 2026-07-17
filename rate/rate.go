@@ -29,7 +29,13 @@ func WithFailClosed() Option {
 
 // WithCleanupInterval 启动后台定期 Cleanup；interval <= 0 时使用 1 分钟
 func WithCleanupInterval(interval time.Duration) Option {
-	return func(l *Limiter) { l.cleanupInterval = interval }
+	return func(l *Limiter) {
+		if interval <= 0 {
+			interval = time.Minute
+		}
+		l.cleanupInterval = interval
+		l.cleanupConfigured = true
+	}
 }
 
 // Limiter 业务限流器 —— 基于配置的高层封装
@@ -38,11 +44,12 @@ type Limiter struct {
 	store    Store
 	failOpen bool // false = FailClosed（默认）
 
-	cleanupInterval time.Duration
-	cleanupMu       sync.Mutex
-	cleanupStop     chan struct{}
-	cleanupDone     chan struct{}
-	cleanupRunning  bool
+	cleanupInterval   time.Duration
+	cleanupConfigured bool
+	cleanupMu         sync.Mutex
+	cleanupStop       chan struct{}
+	cleanupDone       chan struct{}
+	cleanupRunning    bool
 }
 
 // NewLimiter 根据配置创建限流器；store 为 nil 时使用默认内存实现。
@@ -60,7 +67,7 @@ func NewLimiter(config *RateLimitConfig, store Store, opts ...Option) *Limiter {
 	for _, opt := range opts {
 		opt(l)
 	}
-	if l.cleanupInterval > 0 {
+	if l.cleanupConfigured {
 		l.StartCleanup(l.cleanupInterval)
 	}
 	return l

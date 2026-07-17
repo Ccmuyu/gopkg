@@ -8,13 +8,15 @@ import (
 )
 
 func AssertEqual(t *testing.T, actual, expected any) {
-	if actual != expected {
+	t.Helper()
+	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("[AssertEqual] actual: %v\nexpected: %v", actual, expected)
 	}
 }
 
 func AssertNotEqual(t *testing.T, actual, expected any) {
-	if actual == expected {
+	t.Helper()
+	if reflect.DeepEqual(actual, expected) {
 		t.Errorf("[AssertNotEqual] actual: %v\nexpected: %v", actual, expected)
 	}
 }
@@ -26,14 +28,9 @@ func AssertTrue(t *testing.T, actual bool) {
 }
 
 func AssertSliceEqual[T any](t *testing.T, actual, expected []T) {
-	if len(actual) != len(expected) {
-		t.Errorf("SliceEqual: len mismatch: %d vs %d", len(actual), len(expected))
-		return
-	}
-	for i := range actual {
-		if any(actual[i]) != any(expected[i]) {
-			t.Errorf("SliceEqual: index %d mismatch: %v vs %v", i, actual[i], expected[i])
-		}
+	t.Helper()
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("[AssertSliceEqual] actual: %v\nexpected: %v", actual, expected)
 	}
 }
 

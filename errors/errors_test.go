@@ -90,6 +90,19 @@ func TestMultiErrorOrNil(t *testing.T) {
 	gtest.AssertTrue(t, empty.ErrorOrNil() != nil)
 }
 
+func TestMultiErrorIgnoresNilEntries(t *testing.T) {
+	sentinel := New("sentinel")
+	m := &MultiError{Errors: []error{nil, sentinel, nil}}
+
+	gtest.AssertEqual(t, m.Error(), "sentinel")
+	gtest.AssertTrue(t, m.HasError())
+	gtest.AssertTrue(t, Is(m, sentinel))
+	gtest.AssertEqual(t, len(m.Unwrap()), 1)
+
+	onlyNil := &MultiError{Errors: []error{nil}}
+	gtest.AssertTrue(t, onlyNil.ErrorOrNil() == nil)
+}
+
 func TestPanicToError(t *testing.T) {
 	err := PanicToError(func() {
 		panic("something went wrong")

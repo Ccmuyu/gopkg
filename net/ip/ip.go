@@ -10,34 +10,17 @@ func IsValid(s string) bool {
 	return net.ParseIP(s) != nil
 }
 
-var privateBlocks = []*net.IPNet{
-	mustCIDR("10.0.0.0/8"),
-	mustCIDR("172.16.0.0/12"),
-	mustCIDR("192.168.0.0/16"),
-	mustCIDR("127.0.0.0/8"),
-	mustCIDR("fc00::/7"),
-	mustCIDR("::1/128"),
-}
-
+// IsPrivate 判断地址是否不应被视为公网目标，包括私网、回环、
+// 链路本地和未指定地址。可用于网络访问控制的基础检查。
 func IsPrivate(s string) bool {
 	ip := net.ParseIP(s)
 	if ip == nil {
 		return false
 	}
-	for _, cidr := range privateBlocks {
-		if cidr.Contains(ip) {
-			return true
-		}
+	if ip4 := ip.To4(); ip4 != nil {
+		ip = ip4
 	}
-	return false
-}
-
-func mustCIDR(s string) *net.IPNet {
-	_, cidr, err := net.ParseCIDR(s)
-	if err != nil {
-		panic("invalid CIDR: " + s)
-	}
-	return cidr
+	return ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsUnspecified()
 }
 
 func ToInt(s string) (int64, error) {
@@ -56,7 +39,11 @@ func ToInt(s string) (int64, error) {
 	return 0, fmt.Errorf("IPv6 not supported: %s", s)
 }
 
+// IntToIP 将 [0, 2^32-1] 范围内的整数转换为 IPv4；越界时返回空字符串。
 func IntToIP(n int64) string {
+	if n < 0 || n > 1<<32-1 {
+		return ""
+	}
 	return net.IP{
 		byte(n >> 24),
 		byte(n >> 16),

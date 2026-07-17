@@ -2,6 +2,7 @@ package file
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	. "github.com/Ccmuyu/gopkg/test"
@@ -58,6 +59,33 @@ func TestCopy(t *testing.T) {
 
 	data, _ := ReadString(dst)
 	AssertEqual(t, data, "copy content")
+}
+
+func TestCopyRejectsSameFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "same.txt")
+	AssertNoError(t, os.WriteFile(path, []byte("keep"), 0600))
+
+	AssertError(t, Copy(path, path))
+	data, err := os.ReadFile(path)
+	AssertNoError(t, err)
+	AssertEqual(t, string(data), "keep")
+}
+
+func TestCopyRejectsHardLinkAndPreservesMode(t *testing.T) {
+	dir := t.TempDir()
+	src := filepath.Join(dir, "src.txt")
+	link := filepath.Join(dir, "link.txt")
+	dst := filepath.Join(dir, "dst.txt")
+	AssertNoError(t, os.WriteFile(src, []byte("keep"), 0600))
+	if err := os.Link(src, link); err != nil {
+		t.Skipf("hard links unavailable: %v", err)
+	}
+
+	AssertError(t, Copy(src, link))
+	AssertNoError(t, Copy(src, dst))
+	info, err := os.Stat(dst)
+	AssertNoError(t, err)
+	AssertEqual(t, info.Mode().Perm(), os.FileMode(0600))
 }
 
 func TestMove(t *testing.T) {

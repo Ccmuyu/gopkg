@@ -1,6 +1,7 @@
 package rand
 
 import (
+	"math"
 	"testing"
 
 	. "github.com/Ccmuyu/gopkg/test"
@@ -28,6 +29,14 @@ func TestInt(t *testing.T) {
 func TestIntMinMax(t *testing.T) {
 	AssertEqual(t, Int(5, 5), 5)
 	AssertEqual(t, Int(10, 5), 10)
+}
+
+func TestIntFullSignedRange(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		n := Int(math.MinInt, math.MaxInt)
+		AssertTrue(t, n >= math.MinInt)
+		AssertTrue(t, n < math.MaxInt)
+	}
 }
 
 func TestBytes(t *testing.T) {

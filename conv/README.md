@@ -40,6 +40,8 @@ json.MustMarshal(map[string]int{"a": 1})  // {"a":1}
 ### conv（指针转换）
 
 ```go
+func Val[T any](p *T) T
+func Ptr[T any](v T) *T
 func String(v *string) string
 func StringPtr(v string) *string
 func Bool(v *bool) bool
@@ -52,7 +54,7 @@ func Int32(v *int32) int32
 func Int32Ptr(v int32) *int32
 func Int64(v *int64) int64
 func Int64Ptr(v int64) *int64
-func IntPtr2Int64Ptr(i *int) *int64
+func IntPtrToInt64Ptr(v *int) *int64
 func Int64PtrToIntPtr(v *int64) *int
 func Int64PtrToInt(v *int64) int
 ```

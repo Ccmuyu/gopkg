@@ -245,6 +245,15 @@ func TestWithCleanupInterval(t *testing.T) {
 	l.StopCleanup()
 }
 
+func TestWithNonPositiveCleanupIntervalUsesDefault(t *testing.T) {
+	for _, interval := range []time.Duration{0, -time.Second} {
+		l := NewSimpleLimiter(100, 60, WithCleanupInterval(interval))
+		AssertTrue(t, l.cleanupRunning)
+		AssertEqual(t, l.cleanupInterval, time.Minute)
+		l.StopCleanup()
+	}
+}
+
 func TestPeekAndRemaining(t *testing.T) {
 	l := NewSimpleLimiter(3, 60)
 

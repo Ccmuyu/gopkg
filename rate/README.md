@@ -96,7 +96,7 @@ h := l.Middleware(
 http.ListenAndServe(":8080", h)
 ```
 
-被限流时默认返回 **429**，并设置 `Retry-After`、`X-RateLimit-Level`。
+被限流时默认返回 **429** 并设置 `X-RateLimit-Level`；仅当等待时间大于 0 时设置 `Retry-After`。
 
 服务位于可信反向代理之后，且代理会覆盖客户端传入的转发头时，可显式启用：
 
@@ -130,7 +130,9 @@ l := rate.NewLimiter(cfg, store)
 - 需要「先看后扣」时用 `Peek` / `PeekN` / `Remaining`（不消耗配额）。
 - `NewLimiter` 会 **Clone 配置快照**；`Config()` / `GetRouteRule` 返回副本，修改不影响内部状态。
 - Store 出错时默认 **FailClosed**（拒绝）；可用 `WithFailOpen` 改为放行。
-- 内存 Store 的 `Cleanup` 会删除空闲超过 `max(构造 idleTTL, 2*lastWindow)` 的 key。
+- 内存 Store 按时间槽近似计算并采用保守边界，最多多限制一个槽宽；Redis Store 按秒级 ZSET 精确计算。
+- 内存 Store 会在请求过程中按分钟摊销清理，也可通过 `Cleanup` 主动删除空闲超过 `max(构造 idleTTL, 2*lastWindow)` 的 key。
+- `WithCleanupInterval` 显式启动后台清理；传入非正间隔时使用 1 分钟。
 
 ## API 参考
 

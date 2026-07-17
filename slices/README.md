@@ -61,4 +61,8 @@ func Intersection[T comparable](a, b []T) []T
 func Union[T comparable](slices ...[]T) []T
 func Difference[T comparable](a, b []T) (inANotB, inBNotA []T)
 func Chunk[T any](s []T, size int) [][]T
+func Sort[T cmp.Ordered](arr []T)
+func Fill[T any](arr []T, val T)
+func Take[T any](arr []T, n int) []T
+func Drop[T any](arr []T, n int) []T
 ```

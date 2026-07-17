@@ -25,7 +25,20 @@ func Int(min, max int) int {
 	if min >= max {
 		return min
 	}
-	return rand.IntN(max-min) + min
+	// 使用无符号差值避免 max-min 在跨越整个有符号整数范围时溢出。
+	span := uint64(max) - uint64(min)
+	return int(uint64(min) + uint64n(span))
+}
+
+func uint64n(n uint64) uint64 {
+	// 拒绝采样消除取模偏差。Int 保证 n > 0。
+	threshold := -n % n
+	for {
+		v := rand.Uint64()
+		if v >= threshold {
+			return v % n
+		}
+	}
 }
 
 func Bytes(n int) []byte {

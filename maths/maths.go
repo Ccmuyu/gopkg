@@ -3,6 +3,7 @@ package maths
 import (
 	"cmp"
 	"math"
+	"math/big"
 	"sort"
 )
 
@@ -30,10 +31,12 @@ func Clamp[T cmp.Ordered](val, low, high T) T {
 	return val
 }
 
+// Abs 返回绝对值；当最小有符号整数的绝对值无法由原类型表示时，
+// 返回该类型的最大值（饱和语义）。
 func Abs[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64](x T) T {
 	if x < 0 {
 		if -x < 0 {
-			return x
+			return -(x + 1)
 		}
 		return -x
 	}
@@ -76,44 +79,47 @@ func Pow(base, exp int) int {
 }
 
 func IsPrime(n int) bool {
-	if n <= 1 {
-		return false
-	}
-	if n <= 3 {
-		return true
-	}
-	if n%2 == 0 || n%3 == 0 {
-		return false
-	}
-	for i := 5; i*i <= n; i += 6 {
-		if n%i == 0 || n%(i+2) == 0 {
-			return false
-		}
-	}
-	return true
+	return n > 1 && big.NewInt(int64(n)).ProbablyPrime(0)
 }
 
-// GCD 返回最大公约数，始终为非负值（对负数输入取绝对值语义）。
+// GCD 返回最大公约数，始终为非负值；结果无法由 int 表示时返回 MaxInt。
 func GCD(a, b int) int {
 	for b != 0 {
 		a, b = b, a%b
 	}
 	if a < 0 {
+		if -a < 0 {
+			return int(^uint(0) >> 1)
+		}
 		return -a
 	}
 	return a
 }
 
-// LCM 返回最小公倍数，始终为非负值；任一入参为 0 时返回 0。
+// LCM 返回最小公倍数，始终为非负值；任一入参为 0 时返回 0，
+// 结果溢出 int 时返回 MaxInt。
 func LCM(a, b int) int {
 	if a == 0 || b == 0 {
 		return 0
 	}
-	l := a / GCD(a, b) * b
-	if l < 0 {
-		return -l
+	gcd := GCD(a, b)
+	left := intMagnitude(a)
+	if gcd > 0 {
+		left /= uint(gcd)
 	}
-	return l
+	right := intMagnitude(b)
+	maxInt := uint(^uint(0) >> 1)
+	if right != 0 && left > maxInt/right {
+		return int(maxInt)
+	}
+	return int(left * right)
+}
+
+func intMagnitude(v int) uint {
+	if v < 0 {
+		return uint(-(v + 1)) + 1
+	}
+	return uint(v)
 }
 
 func Fibonacci(n int) []int {

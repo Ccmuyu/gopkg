@@ -55,7 +55,12 @@ func ReplaceN(s, old, new string, n int) string {
 	return strings.Replace(s, old, new, n)
 }
 
+// Ellipsis 最多保留 maxLen 个字符，并在发生截断时追加 "...";
+// maxLen 不包含省略号长度，负数按 0 处理。
 func Ellipsis(s string, maxLen int) string {
+	if maxLen < 0 {
+		maxLen = 0
+	}
 	runes := []rune(s)
 	if len(runes) <= maxLen {
 		return s
@@ -191,6 +196,9 @@ func ToKebab(s string) string {
 }
 
 func Mask(s string, unmaskLen int, mask rune) string {
+	if unmaskLen < 0 {
+		unmaskLen = 0
+	}
 	masked := []rune(s)
 	if len(masked) <= unmaskLen {
 		return s

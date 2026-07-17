@@ -51,19 +51,20 @@ func RetryCtx(ctx context.Context, fn func() error, opts ...Option) error {
 	for _, opt := range opts {
 		opt(o)
 	}
+	if o.maxAttempts <= 0 {
+		o.maxAttempts = 1
+	}
 
 	var err error
 	delay := o.delay
 	for i := 0; i < o.maxAttempts; i++ {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err = fn(); err == nil {
 			return nil
 		}
 		if i < o.maxAttempts-1 {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-			}
 			d := delay
 			if o.jitter {
 				d = time.Duration(float64(d) * (0.5 + rand.Float64()))

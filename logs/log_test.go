@@ -2,7 +2,9 @@ package logs
 
 import (
 	"context"
+	"io"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -105,6 +107,43 @@ func TestDefaultLazyInit(t *testing.T) {
 	AssertNotNil(t, l)
 	// 再次调用返回同一实例
 	AssertTrue(t, Default() == l)
+}
+
+func TestSetDefaultIgnoresNil(t *testing.T) {
+	resetDefaultState()
+	original := Default()
+	SetDefault(nil)
+	AssertTrue(t, Default() == original)
+}
+
+type reentrantFormatter struct {
+	logger  *Logger
+	entered atomic.Bool
+}
+
+func (f *reentrantFormatter) Format(*Entry) string {
+	if f.entered.CompareAndSwap(false, true) {
+		f.logger.Info(context.Background(), "nested")
+	}
+	return "formatted\n"
+}
+
+func TestFormatterCanLogWithoutDeadlock(t *testing.T) {
+	formatter := &reentrantFormatter{}
+	logger := New(WithOutput(io.Discard), WithFormatter(formatter))
+	formatter.logger = logger
+
+	done := make(chan struct{})
+	go func() {
+		logger.Info(context.Background(), "outer")
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("logging deadlocked in formatter")
+	}
 }
 
 func resetDefaultState() {

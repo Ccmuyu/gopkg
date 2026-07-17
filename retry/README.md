@@ -19,10 +19,20 @@ err := retry.Retry(func() error {
    retry.WithJitter())
 ```
 
+需要取消或截止时间时使用 `RetryCtx`。已取消的 context 不会执行回调。
+`maxAttempts <= 0` 会归一化为 1，确保操作至少执行一次。
+
+```go
+err := retry.RetryCtx(ctx, func() error {
+    return doSomething()
+}, retry.WithMaxAttempts(5))
+```
+
 ## API 参考
 
 ```go
 func Retry(fn func() error, opts ...Option) error
+func RetryCtx(ctx context.Context, fn func() error, opts ...Option) error
 func WithMaxAttempts(n int) Option
 func WithDelay(d time.Duration) Option
 func WithBackoff() Option

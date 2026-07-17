@@ -52,6 +52,8 @@ func TestRandomToken(t *testing.T) {
 	AssertTrue(t, len(token) > 0)
 	token2 := RandomToken(16)
 	AssertTrue(t, token != token2)
+	AssertEqual(t, RandomToken(0), "")
+	AssertEqual(t, RandomToken(-1), "")
 }
 
 func TestHMAC(t *testing.T) {

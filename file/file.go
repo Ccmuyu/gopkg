@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -57,20 +58,51 @@ func Copy(src, dst string) error {
 	}
 	defer srcFile.Close()
 
+	srcInfo, err := srcFile.Stat()
+	if err != nil {
+		return err
+	}
+	if dstInfo, statErr := os.Stat(dst); statErr == nil {
+		if os.SameFile(srcInfo, dstInfo) {
+			return fmt.Errorf("file: source and destination are the same file")
+		}
+	} else if !os.IsNotExist(statErr) {
+		return statErr
+	}
+
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
 
-	dstFile, err := os.Create(dst)
+	dstFile, err := os.CreateTemp(filepath.Dir(dst), ".copy-*")
 	if err != nil {
 		return err
 	}
+	tmpPath := dstFile.Name()
+	keepTemp := false
+	defer func() {
+		if !keepTemp {
+			_ = os.Remove(tmpPath)
+		}
+	}()
 
-	_, err = io.Copy(dstFile, srcFile)
+	if err = dstFile.Chmod(srcInfo.Mode().Perm()); err == nil {
+		_, err = io.Copy(dstFile, srcFile)
+	}
+	if err == nil {
+		err = dstFile.Sync()
+	}
 	if closeErr := dstFile.Close(); closeErr != nil && err == nil {
 		err = closeErr
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	if err = os.Rename(tmpPath, dst); err != nil {
+		return err
+	}
+	keepTemp = true
+	return nil
 }
 
 func Move(src, dst string) error {

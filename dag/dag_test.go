@@ -197,6 +197,28 @@ func TestContextCancel(t *testing.T) {
 	gtest.AssertError(t, err)
 }
 
+func TestPreCanceledContextReturnsCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	d := New().Add("a", nil, noop)
+	results, err := d.Run(ctx)
+	gtest.AssertTrue(t, errors.Is(err, context.Canceled))
+	gtest.AssertEqual(t, len(results), 0)
+}
+
+func TestExternalCancellationIsReturnedWhenTaskSucceeds(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	d := New().Add("a", nil, func(context.Context, Results) (any, error) {
+		cancel()
+		return "done", nil
+	})
+
+	results, err := d.Run(ctx)
+	gtest.AssertTrue(t, errors.Is(err, context.Canceled))
+	gtest.AssertEqual(t, results["a"], "done")
+}
+
 func TestTopoOrder(t *testing.T) {
 	d := New().
 		Add("a", nil, noop).

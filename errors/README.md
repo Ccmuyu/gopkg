@@ -25,6 +25,7 @@ m := &errors.MultiError{}
 m.Append(err1)
 m.Append(err2)
 m.HasError()  // true
+err = m.ErrorOrNil()
 
 // PanicToError 安全执行
 err := errors.PanicToError(func() {
@@ -48,4 +49,6 @@ type MultiError struct { Errors []error }
 func (m *MultiError) Error() string
 func (m *MultiError) Append(err error)
 func (m *MultiError) HasError() bool
+func (m *MultiError) Unwrap() []error
+func (m *MultiError) ErrorOrNil() error
 ```

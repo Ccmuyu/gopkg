@@ -52,6 +52,8 @@ type slidingWindowStore struct {
 	slots   int   // 子槽数量（用于粒度；不因槽满丢弃未过期计数）
 	idleTTL int64 // Cleanup 空闲阈值下限（秒）
 	nowFunc func() time.Time
+
+	lastCleanup int64
 }
 
 // NewSlidingWindowStore 创建内存滑动窗口存储。
@@ -120,6 +122,30 @@ func collectValid(slots []slot, windowStart, slotWidth int64) ([]slot, int64) {
 	return valid, current
 }
 
+func (s *slidingWindowStore) cleanupLocked(now int64) {
+	for key, ks := range s.data {
+		if ks == nil || len(ks.slots) == 0 {
+			delete(s.data, key)
+			continue
+		}
+		ttl := ks.lastWindow * 2
+		if ttl < s.idleTTL {
+			ttl = s.idleTTL
+		}
+		if ks.lastAccess < now-ttl {
+			delete(s.data, key)
+		}
+	}
+	s.lastCleanup = now
+}
+
+func (s *slidingWindowStore) maybeCleanupLocked(now int64) {
+	const cleanupInterval = int64(60)
+	if s.lastCleanup == 0 || now-s.lastCleanup >= cleanupInterval {
+		s.cleanupLocked(now)
+	}
+}
+
 // Incr 对 key 计数 +1
 func (s *slidingWindowStore) Incr(key string, limit, window int64) (CountResult, error) {
 	s.mu.Lock()
@@ -130,6 +156,7 @@ func (s *slidingWindowStore) Incr(key string, limit, window int64) (CountResult,
 	}
 
 	now := s.nowFunc().Unix()
+	s.maybeCleanupLocked(now)
 	sw := s.slotWidth(window)
 	currentSlotTs := (now / sw) * sw
 	windowStart := now - window
@@ -213,20 +240,7 @@ func (s *slidingWindowStore) Peek(key string, limit, window int64) (CountResult,
 func (s *slidingWindowStore) Cleanup() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	now := s.nowFunc().Unix()
-	for key, ks := range s.data {
-		if ks == nil || len(ks.slots) == 0 {
-			delete(s.data, key)
-			continue
-		}
-		ttl := ks.lastWindow * 2
-		if ttl < s.idleTTL {
-			ttl = s.idleTTL
-		}
-		if ks.lastAccess < now-ttl {
-			delete(s.data, key)
-		}
-	}
+	s.cleanupLocked(s.nowFunc().Unix())
 	return nil
 }
 

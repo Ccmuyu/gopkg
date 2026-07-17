@@ -9,18 +9,20 @@ import (
 	"strings"
 	"sync"
 	"unicode"
+
+	gip "github.com/Ccmuyu/gopkg/net/ip"
 )
 
 var (
-	emailRegex       = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	phoneRegex       = regexp.MustCompile(`^1[3-9]\d{9}$`)
-	urlRegex         = regexp.MustCompile(`^https?://[^\s/$.?#].[^\s]*$`)
-	ipv4Regex        = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
-	uuidRegex        = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
-	macRegex         = regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
-	hexColorRegex    = regexp.MustCompile(`^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`)
-	postalCodeRegex  = regexp.MustCompile(`^\d{6}$`)
-	creditCardRegex  = regexp.MustCompile(`^[0-9]{13,19}$`)
+	emailRegex      = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+	phoneRegex      = regexp.MustCompile(`^1[3-9]\d{9}$`)
+	urlRegex        = regexp.MustCompile(`^https?://[^\s/$.?#].[^\s]*$`)
+	ipv4Regex       = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+	uuidRegex       = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+	macRegex        = regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
+	hexColorRegex   = regexp.MustCompile(`^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`)
+	postalCodeRegex = regexp.MustCompile(`^\d{6}$`)
+	creditCardRegex = regexp.MustCompile(`^[0-9]{13,19}$`)
 )
 
 func IsEmail(s string) bool {
@@ -171,30 +173,6 @@ func IsEmailAddr(s string) bool {
 	return err == nil
 }
 
-var privateBlocks = []*net.IPNet{
-	mustCIDR("10.0.0.0/8"),
-	mustCIDR("172.16.0.0/12"),
-	mustCIDR("192.168.0.0/16"),
-	mustCIDR("127.0.0.0/8"),
-}
-
 func IsPrivateIP(s string) bool {
-	ip := net.ParseIP(s)
-	if ip == nil {
-		return false
-	}
-	for _, cidr := range privateBlocks {
-		if cidr.Contains(ip) {
-			return true
-		}
-	}
-	return false
-}
-
-func mustCIDR(s string) *net.IPNet {
-	_, cidr, err := net.ParseCIDR(s)
-	if err != nil {
-		panic("invalid CIDR: " + s)
-	}
-	return cidr
+	return gip.IsPrivate(s)
 }
