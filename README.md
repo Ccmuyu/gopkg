@@ -34,6 +34,7 @@ go get github.com/Ccmuyu/gopkg
 | `env` | 环境变量：Get、MustGet、EnvironMap |
 | `retry` | 重试机制：支持最大次数、延迟、退避、抖动 |
 | `rate` | 滑动窗口限流：全局/IP/路由、Peek、HTTP 中间件、Redis Store |
+| `dag` | 有向无环图任务编排：依赖声明、环检测、拓扑排序、并发执行、数据传递 |
 | `test` | 测试工具：AssertEqual、AssertSliceEqual、AssertNil、AssertError、AssertPanic、AssertMatch 等 |
 
 ## 快速开始
