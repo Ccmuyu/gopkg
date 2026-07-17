@@ -35,6 +35,8 @@ go get github.com/Ccmuyu/gopkg
 | `retry` | 重试机制：支持最大次数、延迟、退避、抖动 |
 | `rate` | 滑动窗口限流：全局/IP/路由、Peek、HTTP 中间件、Redis Store |
 | `dag` | 有向无环图任务编排：依赖声明、环检测、拓扑排序、并发执行、数据传递 |
+| `cors` | CORS 中间件：源白名单、预检、凭证、MaxAge、Private Network |
+| `csrf` | CSRF 防护：双重提交 Cookie、请求头/表单校验、TrustedOrigins |
 | `test` | 测试工具：AssertEqual、AssertSliceEqual、AssertNil、AssertError、AssertPanic、AssertMatch 等 |
 
 ## 快速开始

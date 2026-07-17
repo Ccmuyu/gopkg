@@ -36,6 +36,8 @@
 | `retry` | Retry、WithMaxAttempts、WithDelay、WithBackoff、WithJitter | ✅ 已实现 |
 | `rate` | 滑动窗口限流、三级规则、Peek/Remaining、FailClosed、HTTP Middleware、Redis Store | ✅ 已实现 |
 | `dag` | 有向无环图任务编排：Add、Validate、TopoOrder、Run、并发上限、出错策略、数据传递、DOT | ✅ 已实现 |
+| `cors` | CORS 中间件：AllowOrigins、预检 OPTIONS、Credentials、MaxAge、Private Network | ✅ 已实现 |
+| `csrf` | CSRF 双重提交 Cookie：Generate、Token、Valid、Middleware、TrustedOrigins | ✅ 已实现 |
 | `test` | AssertEqual、AssertTrue、AssertSliceEqual、ContainsStr、SliceContains | ✅ 已实现 |
 | `test` | AssertNil、AssertNotNil、AssertError、AssertNoError、AssertPanic、AssertMatch | ✅ 已实现 |
 
